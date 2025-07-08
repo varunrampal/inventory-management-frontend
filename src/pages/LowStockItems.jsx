@@ -1,7 +1,9 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 
-
+const BASE_URL = import.meta.env.PROD 
+? 'https://inventory-management-server-vue1.onrender.com' 
+: 'http://localhost:5173';
 
 export default function LowStockItems() {
 
@@ -9,7 +11,7 @@ export default function LowStockItems() {
     const LOW_STOCK_THRESHOLD = 100;
 
     useEffect(() => {
-        fetch('/admin/inventory', { credentials: 'include' })
+        fetch(`${BASE_URL}/admin/inventory`, { credentials: 'include' })
             .then(res => {
                 if (res.status === 401) navigate('/login');
                 return res.json();

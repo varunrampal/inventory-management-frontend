@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const BASE_URL = import.meta.env.PROD 
+? 'https://inventory-management-server-vue1.onrender.com' 
+: 'http://localhost:5173';
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -8,7 +12,8 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const handleLogin = async () => {
-    const res = await fetch('/admin/login', {
+    console.log(BASE_URL);
+    const res = await fetch(`${BASE_URL}/admin/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

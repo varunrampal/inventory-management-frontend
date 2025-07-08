@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const BASE_URL = import.meta.env.PROD 
+? 'https://inventory-management-server-vue1.onrender.com' 
+: 'http://localhost:5173';
 export default function AdminDashboard() {
   const [inventory, setInventory] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -28,7 +31,7 @@ export default function AdminDashboard() {
 
 
   useEffect(() => {
-    fetch('/admin/inventory', { credentials: 'include' })
+    fetch(`${BASE_URL}/admin/inventory`, { credentials: 'include' })
       .then(res => {
         if (res.status === 401) navigate('/login');
         return res.json();
@@ -47,7 +50,7 @@ export default function AdminDashboard() {
   };
 
   const handleUpdate = async () => {
-    const res = await fetch(`/admin/inventory/${editingId}`, {
+    const res = await fetch(`${BASE_URL}/admin/inventory/${editingId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -64,7 +67,7 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = async () => {
-    await fetch('/admin/logout', {
+    await fetch(`${BASE_URL}/admin/logout`, {
       method: 'POST',
       credentials: 'include'
     });
