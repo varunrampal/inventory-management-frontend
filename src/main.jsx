@@ -13,12 +13,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <Routes>
       <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route 
+      <Route path="/dashboard" element={<AdminDashboard />} />
+      {/* <Route 
         path="/dashboard" element={
           <ProtectedRoute>
             <AdminDashboard />
           </ProtectedRoute>
-        } />
+        } /> */}
       <Route path="/analytics" element={
         <ProtectedRoute>
           <Analytics />
