@@ -1,5 +1,6 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
+import Layout from '../components/Layout';
 
 const BASE_URL = import.meta.env.PROD 
 ? 'https://inventory-management-server-vue1.onrender.com' 
@@ -11,11 +12,20 @@ export default function LowStockItems() {
     const LOW_STOCK_THRESHOLD = 100;
 
     useEffect(() => {
-        fetch(`${BASE_URL}/admin/inventory`, { credentials: 'include' })
-            .then(res => {
-                if (res.status === 401) navigate('/login');
-                return res.json();
-            })
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+      fetch(`${BASE_URL}/admin/inventory`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+        .then(res => {
+          if (res.status === 401) navigate('/login');
+          return res.json();
+        })
             .then(data => setInventory(data))
             .catch(err => console.error('Fetch error:', err));
     }, []);
@@ -23,9 +33,10 @@ export default function LowStockItems() {
     const lowStockItems = inventory.filter(item => item.quantity < LOW_STOCK_THRESHOLD);
 
     return (
+      <Layout>
         <div className="min-h-screen bg-gray-100 p-6">
             <header className="mb-6 flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Low Stock Items</h1>
+                <h1 className="text-2xl font-bold">Low Stock Plants</h1>
                 <button className="bg-red-500 text-white px-4 py-1 rounded">Logout</button>
             </header>
 
@@ -50,9 +61,8 @@ export default function LowStockItems() {
       )}
 
 
-            <footer className="text-center text-gray-500 text-sm mt-10">
-                © 2025 Green Flow Nurseries Ltd.
-            </footer>
+          
         </div>
+        </Layout>
     );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Layout from '../components/Layout';
 
 const BASE_URL = import.meta.env.PROD 
 ? 'https://inventory-management-server-vue1.onrender.com' 
@@ -121,20 +122,21 @@ export default function AdminDashboard() {
   };
 
   return (
+      <Layout>
     <div className="flex h-screen">
-      <aside className="w-64 bg-white shadow-md hidden md:block">
+      {/* <aside className="w-64 bg-white shadow-md hidden md:block">
         <div className="p-4 font-bold text-xl border-b">Admin Panel</div>
         <nav className="p-4 space-y-2">
           <a href="#" className="block text-blue-600">Dashboard</a>
           <a href="/analytics" className="block">Analytics</a>
            <a href="/lowstockitems" className="block">Low Stock Items</a>
-         {/* <a href="#" className="block">Users</a> */}
+       
         </nav>
-      </aside>
+      </aside> */}
 
       <main className="flex-1 bg-gray-100 p-6">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Inventory Admin Panel</h1>
+          <h1 className="text-2xl font-bold">Inventory</h1>
           <button className="bg-red-500 text-white px-4 py-1 rounded"  onClick={handleLogout}>Logout</button>
         </div>
 
@@ -146,7 +148,7 @@ export default function AdminDashboard() {
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
-          <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">+ Add Item</button>
+          {/* <button className="ml-4 bg-blue-500 text-white px-4 py-2 rounded">+ Add Item</button> */}
         </div>
 
         <table className="w-full bg-white rounded shadow">
@@ -223,10 +225,11 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        <footer className="text-center text-gray-500 text-sm mt-10">
+        {/* <footer className="text-center text-gray-500 text-sm mt-10">
           © 2025 Green Flow Nurseries Ltd.
-        </footer>
+        </footer> */}
       </main>
     </div>
+    </Layout>
   );
 }

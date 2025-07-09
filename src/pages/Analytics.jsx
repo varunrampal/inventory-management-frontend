@@ -1,6 +1,7 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import Layout from '../components/Layout';
 
  const BASE_URL = import.meta.env.PROD 
 ? 'https://inventory-management-server-vue1.onrender.com' 
@@ -10,7 +11,16 @@ export default function Dashboard() {
 const [inventory, setInventory] = useState([]);
  
   useEffect(() => {
-    fetch(`${BASE_URL}/admin/inventory`, { credentials: 'include' })
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    fetch(`${BASE_URL}/admin/inventory`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
       .then(res => {
         if (res.status === 401) navigate('/login');
         return res.json();
@@ -22,6 +32,7 @@ const [inventory, setInventory] = useState([]);
 
 
   return (
+    <Layout>
     <div className="min-h-screen bg-gray-100 p-6">
       <header className="mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold">Inventory Analytics</h1>
@@ -39,10 +50,7 @@ const [inventory, setInventory] = useState([]);
           </BarChart>
         </ResponsiveContainer>
       </section>
-
-      <footer className="text-center text-gray-500 text-sm mt-10">
-        © 2025 Green Flow Nurseries Ltd.
-      </footer>
-    </div>
+</div>
+     </Layout>
   );
 }

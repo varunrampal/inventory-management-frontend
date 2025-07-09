@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './LoginPage';
-import AdminDashboard from './AdminDashboard';
+import LoginPage from './pages/LoginPage';
+import AdminDashboard from './pages/AdminDashboard';
 import Analytics from './pages/Analytics';
 import LowStockItems from './pages/LowStockItems';
 import ProtectedRoute from './ProtectedRoute';
@@ -32,7 +32,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Analytics />
         </ProtectedRoute>
       } />
-      <Route path="/lowstockitems" element={
+      <Route path="/lowstockplants" element={
         <ProtectedRoute>
           <LowStockItems />
         </ProtectedRoute>
