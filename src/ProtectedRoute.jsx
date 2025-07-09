@@ -6,12 +6,24 @@ export default function ProtectedRoute({ children }) {
 const BASE_URL = import.meta.env.PROD 
 ? 'https://inventory-management-server-vue1.onrender.com' 
 : 'http://localhost:4000';
-  useEffect(() => {
-    fetch(`${BASE_URL}/admin/auth-check`, { method: 'GET',credentials: 'include' })
+  // useEffect(() => {
+  //   fetch(`${BASE_URL}/admin/auth-check`, { method: 'GET',credentials: 'include' })
+  //     .then(res => setIsAuthenticated(res.ok))
+  //     .catch(() => setIsAuthenticated(false));
+  // }, []);
+
+ useEffect(() => {
+   const token = localStorage.getItem('token');
+    fetch(`${BASE_URL}/admin/auth-check`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+      })
       .then(res => setIsAuthenticated(res.ok))
       .catch(() => setIsAuthenticated(false));
   }, []);
 
+  // Check if the user is authenticated
   if (isAuthenticated === null) return <div>Loading...</div>;
 
   return isAuthenticated ? children : <Navigate to="/login" replace />;

@@ -30,8 +30,31 @@ export default function AdminDashboard() {
 
 
 
-  useEffect(() => {
-    fetch(`${BASE_URL}/admin/inventory`, { credentials: 'include' })
+  // useEffect(() => {
+  //   fetch(`${BASE_URL}/admin/inventory`, { credentials: 'include' })
+  //     .then(res => {
+  //       if (res.status === 401) navigate('/login');
+  //       return res.json();
+  //     })
+  //     .then(data => {
+  //       console.log('Fetched inventory:', data);
+  //       setInventory(data)
+
+  //     })
+  //     .catch(err => console.error('Fetch error:', err));
+  // }, [navigate]);
+
+    useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    fetch(`${BASE_URL}/admin/inventory`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
       .then(res => {
         if (res.status === 401) navigate('/login');
         return res.json();
@@ -49,11 +72,32 @@ export default function AdminDashboard() {
     setFormData({ name: item.name, quantity: item.quantity });
   };
 
+  // const handleUpdate = async () => {
+  //   const res = await fetch(`${BASE_URL}/admin/inventory/${editingId}`, {
+  //     method: 'PUT',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     credentials: 'include',
+  //     body: JSON.stringify(formData)
+  //   });
+  //   if (res.ok) {
+  //     const updated = inventory.map(item =>
+  //       item._id === editingId ? { ...item, ...formData } : item
+  //     );
+  //     setInventory(updated);
+  //     setEditingId(null);
+  //     setFormData({});
+  //   }
+  // };
+
   const handleUpdate = async () => {
+     const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     const res = await fetch(`${BASE_URL}/admin/inventory/${editingId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(formData)
     });
     if (res.ok) {
@@ -67,10 +111,12 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = async () => {
-    await fetch(`${BASE_URL}/admin/logout`, {
-      method: 'POST',
-      credentials: 'include'
-    });
+    // await fetch(`${BASE_URL}/admin/logout`, {
+    //   method: 'POST',
+    //   credentials: 'include'
+    // });
+    // navigate('/login');
+     localStorage.removeItem('token');
     navigate('/login');
   };
 
