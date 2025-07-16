@@ -5,6 +5,9 @@ import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import Analytics from './pages/Analytics';
 import LowStockItems from './pages/LowStockItems';
+import ItemDetails from './pages/ItemDetails';
+import Inventory from './pages/Inventory';
+import Tab from './pages/Tab';
 import ProtectedRoute from './ProtectedRoute';
 import './styles.css';
 
@@ -27,6 +30,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <AdminDashboard />
           </ProtectedRoute>
         } />
+        <Route 
+        path="/inventory" element={
+          <ProtectedRoute>
+            <Inventory />
+          </ProtectedRoute>
+        } />
       <Route path="/analytics" element={
         <ProtectedRoute>
           <Analytics />
@@ -35,6 +44,18 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Route path="/lowstockplants" element={
         <ProtectedRoute>
           <LowStockItems />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/items/:id" element={
+        <ProtectedRoute>
+          <ItemDetails />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/tab" element={
+        <ProtectedRoute>
+          <Tab />
         </ProtectedRoute>
       } />
       {/* Add more routes as needed */}
