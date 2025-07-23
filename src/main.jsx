@@ -1,12 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import Analytics from './pages/Analytics';
 import LowStockItems from './pages/LowStockItems';
 import ItemDetails from './pages/ItemDetails';
 import Inventory from './pages/Inventory';
+import SyncQuickbooks from './pages/SyncQuickbooks';
 import Tab from './pages/Tab';
 import ProtectedRoute from './ProtectedRoute';
 import './styles.css';
@@ -19,6 +22,8 @@ import './styles.css';
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(
+  <>
+  <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover draggable pauseOnFocusLoss /> 
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<LoginPage />} />
@@ -58,7 +63,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Tab />
         </ProtectedRoute>
       } />
-      {/* Add more routes as needed */}
+     <Route 
+        path="/sync" element={
+          <ProtectedRoute>
+            <SyncQuickbooks />
+          </ProtectedRoute>
+        } />
     </Routes>
   </BrowserRouter>
+  </>
 );

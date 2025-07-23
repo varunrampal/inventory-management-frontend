@@ -7,6 +7,7 @@ export default function Sidebar() {
            <li><a href="/inventory" className="text-blue-600">Inventory</a></li>
           <li><a href="/lowstockplants" className="text-blue-600">Low Stock Plants</a></li>
           <li><a href="/analytics" className="text-blue-600">Analytics</a></li>
+          <li><a href="/sync" className="text-blue-600">Sync Quickbooks</a></li>
         </ul>
       </nav>
     </aside>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
+import ItemReservationInfo from '../components/ItemReservationInfo';
 
 // This component fetches and displays details of a specific item
 // based on the ID from the URL parameters.
@@ -20,7 +21,7 @@ export default function ItemDetails() {
             try {
                 setLoading(true);
                 setError('');
-                console.log(`Fetching item with ID: ${id}`);
+         
                 if (!id) throw new Error('Item ID is required');
                 const response = await fetch(`${BASE_URL}/admin/items/${id}`, {
                     headers: {
@@ -82,15 +83,14 @@ export default function ItemDetails() {
     
   </div>
   <div className="mt-4">
-    <Link to="/dashboard" className="text-blue-500 hover:underline block mt-4">← Back to Inventory</Link>
+    <Link to="/inventory" className="text-blue-500 hover:underline block mt-4">← Back to Inventory</Link>
   </div>
 </div>
 }
-        {activeTab === 'Transactions' && <p>Transaction list goes here</p>}
+        {activeTab === 'Transactions' && <ItemReservationInfo itemName={item.name} status='Pending' />}
       </div>
     </Layout>
-
-        
+       
     );
 };
 
