@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
+import { useRealm } from '../context/RealmContext';
 
 const BASE_URL = import.meta.env.PROD
   ? 'https://inventory-management-server-vue1.onrender.com'
@@ -16,7 +17,7 @@ export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const navigate = useNavigate();
-
+  const { realmId } = useRealm();
 
 
   // useEffect(() => {
@@ -94,8 +95,11 @@ export default function AdminDashboard() {
             <h1 className="text-2xl font-bold">Dashboard</h1>
             {/* <button className="bg-red-500 text-white px-4 py-1 rounded"  onClick={handleLogout}>Logout</button> */}
           </div>
-
+ <div>
+      <h2>Dashboard for Realm ID: {realmId}</h2>
+    </div>
         </main>
+         
       </div>
     </Layout>
   );

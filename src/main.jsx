@@ -12,6 +12,7 @@ import Inventory from './pages/Inventory';
 import SyncQuickbooks from './pages/SyncQuickbooks';
 import Tab from './pages/Tab';
 import ProtectedRoute from './ProtectedRoute';
+import { RealmProvider } from './context/RealmContext';
 import './styles.css';
 
 // function ProtectedRoute({ children }) {
@@ -23,6 +24,7 @@ import './styles.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <>
+  <RealmProvider>
   <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover draggable pauseOnFocusLoss /> 
   <BrowserRouter>
     <Routes>
@@ -71,5 +73,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         } />
     </Routes>
   </BrowserRouter>
+  </RealmProvider>
   </>
 );

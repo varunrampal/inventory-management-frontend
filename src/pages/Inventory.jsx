@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
-
+import { useRealm } from '../context/RealmContext';
 const BASE_URL = import.meta.env.PROD
   ? 'https://inventory-management-server-vue1.onrender.com'
   : 'http://localhost:4000';
@@ -14,8 +14,10 @@ export default function Inventory() {
   const tabs = ['Items', 'Overview'];
   const [activeTab, setActiveTab] = useState('Items');
   const [currentPage, setCurrentPage] = useState(1);
+   const { realmId } = useRealm();
   const itemsPerPage = 5;
   const navigate = useNavigate();
+   const token = localStorage.getItem('token');
 
   const filtered = inventory
     .filter(item => item.name.toLowerCase().includes(search.toLowerCase()))
@@ -48,12 +50,15 @@ export default function Inventory() {
   // }, [navigate]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
+   
+    if (!token || !realmId) {
       navigate('/login');
       return;
     }
-    fetch(`${BASE_URL}/admin/inventory`, {
+if(!realmId) return;
+ 
+
+    fetch(`${BASE_URL}/admin/inventory/${realmId}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -63,12 +68,14 @@ export default function Inventory() {
         return res.json();
       })
       .then(data => {
-        console.log('Fetched inventory:', data);
+        //console.log('Fetched inventory:', data);
         setInventory(data)
 
       })
       .catch(err => console.error('Fetch error:', err));
-  }, [navigate]);
+
+
+  }, [realmId]);
 
   const startEdit = (item) => {
     setEditingId(item._id);
