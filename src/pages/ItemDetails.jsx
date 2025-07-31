@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ItemReservationInfo from '../components/ItemReservationInfo';
+import { useRealm } from '../context/RealmContext';
 
 // This component fetches and displays details of a specific item
 // based on the ID from the URL parameters.
@@ -15,15 +16,16 @@ export default function ItemDetails() {
     const [error, setError] = useState('');
     const tabs = ['Overview', 'Transactions'];
     const [activeTab, setActiveTab] = useState('Overview');
+       const { realmId } = useRealm();
 
     useEffect(() => {
         const fetchItem = async () => {
             try {
                 setLoading(true);
                 setError('');
-         
-                if (!id) throw new Error('Item ID is required');
-                const response = await fetch(`${BASE_URL}/admin/items/${id}`, {
+
+                if (!id && !realmId) throw new Error('Item ID and Realm ID are required');
+                const response = await fetch(`${BASE_URL}/admin/items/${id}/${realmId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
@@ -87,7 +89,8 @@ export default function ItemDetails() {
   </div>
 </div>
 }
-        {activeTab === 'Transactions' && <ItemReservationInfo itemName={item.name} status='Pending' />}
+        {/* {activeTab === 'Transactions' && <ItemReservationInfo itemName={item.name} status='All' />} */}
+         {activeTab === 'Transactions' && <ItemReservationInfo itemId={id} itemName={item.name} status='All' />}
       </div>
     </Layout>
        

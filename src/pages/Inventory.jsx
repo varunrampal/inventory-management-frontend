@@ -105,7 +105,7 @@ if(!realmId) return;
       navigate('/login');
       return;
     }
-    const res = await fetch(`${BASE_URL}/admin/inventory/${editingId}`, {
+    const res = await fetch(`${BASE_URL}/admin/inventory/${editingId}/${realmId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(formData)
