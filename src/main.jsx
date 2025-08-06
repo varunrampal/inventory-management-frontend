@@ -14,6 +14,7 @@ import Tab from './pages/Tab';
 import ProtectedRoute from './ProtectedRoute';
 import { RealmProvider } from './context/RealmContext';
 import './styles.css';
+import EstimatesList from './pages/EstimatesList';
 
 // function ProtectedRoute({ children }) {
 //   const token = localStorage.getItem('token'); // Replace with actual authentication logic
@@ -71,6 +72,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <SyncQuickbooks />
           </ProtectedRoute>
         } />
+        <Route path="/estimates" element={
+          <ProtectedRoute>
+            <EstimatesList/>
+          </ProtectedRoute>
+        } />
+      <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   </BrowserRouter>
   </RealmProvider>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+
 const BASE_URL = import.meta.env.PROD
   ? 'https://inventory-management-server-vue1.onrender.com'
   : 'http://localhost:4000';
@@ -72,27 +73,83 @@ export default function LoginPage() {
     //   </button>
     // </div>
 
-    <form onSubmit={handleSubmit} className="p-4 max-w-md mx-auto">
-      <h2 className="text-xl mb-4">Login</h2>
-      {error && <p className="text-red-500">{error}</p>}
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-        className="border p-2 w-full mb-2"
-        required
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={e => setPassword(e.target.value)}
-        className="border p-2 w-full mb-2"
-        required
-      />
-      <button type="submit" className="bg-blue-500 text-white px-4 py-2">Login</button>
-    </form>
+    // <form onSubmit={handleSubmit} className="p-4 max-w-md mx-auto">
+    //   <h2 className="text-xl mb-4">Login</h2>
+    //   {error && <p className="text-red-500">{error}</p>}
+    //   <input
+    //     type="email"
+    //     placeholder="Email"
+    //     value={email}
+    //     onChange={e => setEmail(e.target.value)}
+    //     className="border p-2 w-full mb-2"
+    //     required
+    //   />
+    //   <input
+    //     type="password"
+    //     placeholder="Password"
+    //     value={password}
+    //     onChange={e => setPassword(e.target.value)}
+    //     className="border p-2 w-full mb-2"
+    //     required
+    //   />
+    //   <button type="submit" className="bg-blue-500 text-white px-4 py-2">Login</button>
+    // </form>
+    <div className="min-h-screen bg-gray-800 flex items-center justify-center px-4">
+      <div className="w-full max-w-2xl bg-gray-400 shadow rounded-lg flex justify-center items-center overflow-hidden">
+        {/* Logo in top-right corner */}
+        {/* <img
+          src={logo}
+          alt="Logo"
+          className="absolute top-4 right-4 h-10 w-auto opacity-90"
+        /> */}
+        {/* Left: Login form */}
+        <div className="w-full md:w-1/2 p-8">
+          <div className="w-full max-w-md mx-auto">
+            <h1 className="text-3xl font-bold mb-2">
+              <span className="text-orange-500">Inv</span>
+              <span className="text-white">Track</span>
+            </h1>
+            <h2 className="text-lg font-bold mb-6 text-left">Sign In</h2>
+          </div>
+
+          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
+          <form onSubmit={handleSubmit}>
+            {/* <label className="block mb-2 text-sm font-medium">Email</label> */}
+            <input
+              type="email"
+              className="w-full mb-4 p-2 border rounded"
+              value={email}
+              placeholder='Email'
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+
+            {/* <label className="block mb-2 text-sm font-medium">Password</label> */}
+            <input
+              type="password"
+              className="w-full mb-4 p-2 border rounded"
+              value={password}
+              placeholder='Password'
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+
+            <button
+              type="submit"
+              className="w-full bg-orange-600 text-white py-2 rounded hover:bg-blue-700"
+            >
+              Login
+            </button>
+          </form>
+        </div>
+
+        {/* Right: Logo image */}
+        {/* <div className="hidden md:block md:w-1/2 bg-gray-100 flex items-center justify-center p-4">
+          <img src={logo} alt="Logo" className="max-w-full h-auto opacity-90" />
+        </div> */}
+      </div>
+    </div>
 
 
   );

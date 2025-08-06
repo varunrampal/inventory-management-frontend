@@ -1,6 +1,7 @@
 import Header from "./Header";
 import Footer from "./Footer";
 import Sidebar from "./Sidebar";
+// import SlidingSidebar from "./SlidingSidebar";
 
 export default function Layout({ children }) {
   return (

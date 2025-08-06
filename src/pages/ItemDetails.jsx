@@ -90,7 +90,7 @@ export default function ItemDetails() {
 </div>
 }
         {/* {activeTab === 'Transactions' && <ItemReservationInfo itemName={item.name} status='All' />} */}
-         {activeTab === 'Transactions' && <ItemReservationInfo itemId={id} itemName={item.name} status='All' />}
+         {activeTab === 'Transactions' && <ItemReservationInfo itemId={id} itemName={item.name} status='All' itemQuantity={item.quantity} />}
       </div>
     </Layout>
        

@@ -7,11 +7,13 @@ const [status, setStatus] = useState('All');
   const [dateRange, setDateRange] = useState('This Month');
   const [customStartDate, setCustomStartDate] = useState(null);
   const [customEndDate, setCustomEndDate] = useState(null);
+  const [customerName, setCustomerName] = useState('');
+  const [estimateId, setEstimateId] = useState('');
 
   const handleStatusChange = (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
-    onFilterChange({ status: newStatus, dateRange, customStartDate, customEndDate });
+    onFilterChange({ status: newStatus, dateRange, customStartDate, customEndDate, customerName });
   };
 
   const handleDateChange = (e) => {
@@ -28,6 +30,14 @@ const [status, setStatus] = useState('All');
   const handleCustomEndChange = (date) => {
     setCustomEndDate(date);
     onFilterChange({ status, dateRange, customStartDate, customEndDate: date });
+  };
+  const handleEstimateIdChange = (e) => {
+    setEstimateId(e.target.value);
+    onFilterChange({ status, dateRange, customStartDate, customEndDate, customerName, estimateId: e.target.value });
+  };
+  const handleCustomerNameChange = (e) => {
+    setCustomerName(e.target.value);
+    onFilterChange({ status, dateRange, customStartDate, customEndDate, customerName: e.target.value, estimateId });
   };
 
   return (
@@ -47,8 +57,20 @@ const [status, setStatus] = useState('All');
             </select>
           </div>
     
+        {/* <div>
+          <label className="block text-sm">Estimate ID</label>
+          <input
+            type="text"
+            name="estimateId"
+            value={estimateId}
+            onChange={handleEstimateIdChange}
+            className="border px-2 py-1 rounded text-sm"
+          />
+        </div> */}
+    
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Estimate Date</label>
             <select
               value={dateRange}
               onChange={handleDateChange}
@@ -86,8 +108,19 @@ const [status, setStatus] = useState('All');
                   placeholderText="End"
                 />
               </div>
+ 
             </>
           )}
+                         <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+          <input
+            type="text"
+            name="customerName"
+            value={customerName}
+            onChange={handleCustomerNameChange}
+            className="border px-3 py-2 rounded text-sm"
+          />
+        </div>
         </div>
   );
 }

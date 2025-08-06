@@ -6,7 +6,7 @@ import { useRealm } from '../context/RealmContext';
 
 
 // export default function ItemReservationInfo({ itemName, status = '' }) {
-export default function ItemReservationInfo({ itemId, itemName,status = '' }) {
+export default function ItemReservationInfo({ itemId, itemName,status = '', itemQuantity }) {
  const [data, setData] = useState({ details: [], totalPages: 1, page: 1 });
   const [loading, setLoading] = useState(true);
   const { realmId } = useRealm();
@@ -65,12 +65,15 @@ export default function ItemReservationInfo({ itemId, itemName,status = '' }) {
   return (
  <div className="bg-white border rounded p-4 shadow max-w-5xl mx-auto">
       <h2 className="text-2xl font-semibold mb-4">{itemName || 'Unnamed Item'}</h2>
-      <EstimateFilters onFilterChange={setFilters} />
-   <div className="mb-4">
-        <h3 className="text-lg font-semibold mb-2">Reserved Quantity</h3>
-        <p><strong>Total Reserved:</strong> {data?.totalReserved ?? 0}</p>
+   {import.meta.env.VITE_DEFAULT_INVENTORY_TYPE=== 'estimates' && (
+  <EstimateFilters onFilterChange={setFilters} />
+)}
+     
+<div className="flex justify-end items-center space-x-6 mb-4">
+  <p><strong>In Stock:</strong> {itemQuantity ?? 0}</p>
+  <p><strong>Total Reserved:</strong> {data?.totalReserved ?? 0}</p>
+</div>
 
-      </div>
 
       {data.details.length > 0 ? (
         <>

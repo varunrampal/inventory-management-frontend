@@ -66,7 +66,7 @@ export default function CompanySelector({ onChange }) {
 
     return (
         <div className="flex items-center gap-2">
-            <label className="text-white text-sm">Company:</label>
+            {/* <label className="text-white text-sm">Company:</label> */}
             <select
                 value={realmId}
                // onChange={handleChange}
