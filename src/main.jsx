@@ -15,6 +15,8 @@ import ProtectedRoute from './ProtectedRoute';
 import { RealmProvider } from './context/RealmContext';
 import './styles.css';
 import EstimatesList from './pages/EstimatesList';
+import EstimateDetails from './pages/EstimateDetails';
+
 
 // function ProtectedRoute({ children }) {
 //   const token = localStorage.getItem('token'); // Replace with actual authentication logic
@@ -77,6 +79,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <EstimatesList/>
           </ProtectedRoute>
         } />
+        <Route path="/estimates/:estimateId" element={
+          <ProtectedRoute>
+            <EstimatesList />
+          </ProtectedRoute>
+        } />
+      <Route path="/estimate/details/:estimateId" element={
+        <ProtectedRoute>
+          <EstimateDetails />
+        </ProtectedRoute>
+      } />
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   </BrowserRouter>

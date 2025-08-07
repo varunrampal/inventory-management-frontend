@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import ReactPaginate from 'react-paginate';
+import { useNavigate, Link } from 'react-router-dom';
 import  EstimateFilters from './EstimateFilters';
 import { useRealm } from '../context/RealmContext';
 
@@ -68,7 +69,11 @@ export default function EstimatesTableWithPagination() {
             <tbody>
               {estimates.map((est, idx) => (
                 <tr key={idx} className="border-b">
-                  <td className="px-2 py-1">{est.estimateId}</td>
+                  <td className="px-2 py-1">
+                    <Link to={`/estimate/details/${est.estimateId}`} className="text-blue-500 hover:underline ml-2">
+                      {est.estimateId}
+                    </Link>
+                  </td>
                   <td className="px-2 py-1">{est.customerName}</td>
                   <td className="px-2 py-1">
                     {new Date(est.txnDate).toLocaleDateString()}
