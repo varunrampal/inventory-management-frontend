@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect, useRef} from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import CompanySelector from './CompanySelector';
 import logout from '../assets/user-thumbnail.png'; // Adjust the path as necessary
 
@@ -13,6 +13,10 @@ export default function Header() {
    const [dropdownOpen, setDropdownOpen] = useState(false);
    const dropdownRef = useRef(null);
   const token = localStorage.getItem('token');
+  const location = useLocation();
+const isEstimateDetailsPage = location.pathname.includes('/estimate/') && location.pathname.includes('/details');
+console.log(isEstimateDetailsPage, location.pathname);
+
   const BASE_URL = import.meta.env.PROD
     ? 'https://inventory-management-server-vue1.onrender.com'
     : 'http://localhost:4000';
@@ -79,7 +83,7 @@ export default function Header() {
 
 {/* Right side: Avatar + Dropdown */}
       <div className="relative flex items-center gap-4" ref={dropdownRef}>
-<CompanySelector onChange={setRealmId} />
+<CompanySelector disabled={isEstimateDetailsPage} onChange={setRealmId} />
 
         <img
           src={logout}

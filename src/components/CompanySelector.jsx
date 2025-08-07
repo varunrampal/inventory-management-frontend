@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRealm } from '../context/RealmContext';
 
-export default function CompanySelector({ onChange }) {
+export default function CompanySelector({ onChange, disabled }) {
     const defaultRealmId = import.meta.env.VITE_DEFAULT_REALMID;
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -69,6 +69,7 @@ export default function CompanySelector({ onChange }) {
             {/* <label className="text-white text-sm">Company:</label> */}
             <select
                 value={realmId}
+            disabled={disabled}
                // onChange={handleChange}
                onChange={(e) => setRealmId(e.target.value)}
                 className="rounded px-2 py-1 text-sm text-white bg-gray-700 border border-gray-500 focus:outline-none focus:ring focus:border-blue-300"

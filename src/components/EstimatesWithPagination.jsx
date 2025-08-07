@@ -19,7 +19,7 @@ export default function EstimatesTableWithPagination() {
 
   useEffect(() => {
     loadEstimates(currentPage + 1);
-  }, [currentPage, filters]);
+  }, [currentPage, filters, realmId]);
 
   const loadEstimates = async (page) => {
     setLoading(true);
