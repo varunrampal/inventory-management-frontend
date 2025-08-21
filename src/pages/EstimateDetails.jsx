@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ItemReservationInfo from '../components/ItemReservationInfo';
 import { useRealm } from '../context/RealmContext';
+import AssociatedPkgAndInvAccordion from '../components/AssociatedPkgAndInvAccordion';
+import ItemsAccordion from '../components/ItemsAccordion';
 
 // This component fetches and displays details of a specific estimate
 // based on the ID from the URL parameters.
@@ -16,6 +18,7 @@ export default function EstimateDetails() {
     const [error, setError] = useState('');
     const [showItems, setShowItems] = useState(false);
     const { realmId } = useRealm();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchEstimate = async () => {
@@ -31,9 +34,9 @@ export default function EstimateDetails() {
                 });
                 if (!response.ok) throw new Error('Failed to fetch estimate details');
                 const data = await response.json();
-                console.log('Fetched estimate details:', data.estimate[0].estimateId);
+                console.log('Fetched estimate details:', data.estimate);
                 if (!data) throw new Error('No estimate data found');
-                setEstimate(data.estimate[0]);
+                setEstimate(data.estimate);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -61,7 +64,14 @@ export default function EstimateDetails() {
                 {/* {activeTab === 'Overview' && <div className="p-6 bg-white rounded shadow-md"> */}
 
                 <div className="space-y-2 text-gray-700">
-
+                    {/* <div className="flex justify-end">
+                        <button
+                            onClick={() => navigate(`/create-package/${estimate.estimateId}`)}
+                            className="bg-orange-600 text-white px-2 py-1 rounded hover:bg-gray-700"
+                        >
+                            Create Package
+                        </button>
+                    </div> */}
                     <table className="w-full border text-sm">
                         <thead className="bg-gray-100">
                             <tr>
@@ -70,6 +80,7 @@ export default function EstimateDetails() {
                                 <th className="border px-2 py-1 text-left">Txn Date</th>
                                 <th className="border px-2 py-1 text-left">Status</th>
                                 <th className="border px-2 py-1 text-left">Total</th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -82,47 +93,54 @@ export default function EstimateDetails() {
                             </tr>
                         </tbody>
                     </table>
-                    <button
-                        onClick={() => setShowItems(!showItems)}
-                        className="text-blue-600 hover:underline"
-                    >
-                        {showItems ? "Hide Items" : "Show Items"}
-                    </button>
 
                 </div>
-                {showItems && (
-                    <div className="mt-4 overflow-x-auto">
-                        <table className="min-w-full border-collapse border border-gray-300">
-                            <thead className="bg-gray-100">
-                                <tr>
-                                    <th className="border border-gray-300 px-4 py-2 text-left">Item Name</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-right">Quantity</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-right">Rate</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-right">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {estimate.items.map((item, index) => (
-                                    <tr key={index} className="hover:bg-gray-50">
-                                        <td className="border border-gray-300 px-4 py-2">{item.name}</td>
-                                        <td className="border border-gray-300 px-4 py-2 text-right">{item.quantity}</td>
-                                        <td className="border border-gray-300 px-4 py-2 text-right">${item.rate.toFixed(2)}</td>
-                                        <td className="border border-gray-300 px-4 py-2 text-right">${item.amount.toFixed(2)}</td>
-                                    </tr>
-                                ))}
-                                <tr className="font-semibold bg-gray-100">
-                                    <td colSpan="3" className="border border-gray-300 px-4 py-2 text-right">Total:</td>
-                                    <td className="border border-gray-300 px-4 py-2 text-right">${estimate.totalAmount.toFixed(2)}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </div>            <div className="mt-6">
+                {/* <div className="flex justify-end">
+                    <button
+                        onClick={() => setShowItems(!showItems)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                    >
+                        {showItems ? "Hide Items" : "Show Items"}
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className={`w-4 h-4 transition-transform duration-200 ${showItems ? 'rotate-180' : ''}`}
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                        </svg>
+                    </button>
+                </div> */}
 
+            </div>
+            <div className="mt-6 space-y-6">
+                <div>
+     <ItemsAccordion
+                    items={estimate.items || []}
+                    totalAmount={estimate.totalAmount} // optional
+                    estimateId={estimate.estimateId}
+                    defaultOpen={true}
+                />
+
+                </div>
+           
+
+                <div>
+                    <AssociatedPkgAndInvAccordion
+                        estimateId={estimate.estimateId}
+                        packages={estimate.packages || []}
+                        estimate = {estimate}
+                        // invoices={estimate.invoices || []}
+                        defaultOpen=""
+                    />
+
+                </div>
                 <div className="mt-4">
                     <Link to="/estimates" className="text-blue-500 hover:underline block mt-4">← Back to Estimates</Link>
                 </div>
+
             </div>
 
         </Layout>

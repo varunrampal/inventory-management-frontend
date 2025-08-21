@@ -17,16 +17,21 @@ export default function Inventory() {
    const { realmId } = useRealm();
   const itemsPerPage = 5;
   const navigate = useNavigate();
-   const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token');
 
-  const filtered = inventory
-    .filter(item => item.name.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) =>
-      sortAsc
-        ? a.name.localeCompare(b.name)
-        : b.name.localeCompare(a.name)
-    );
+  const lower = v => String(v ?? '').toLowerCase();
+   const s = v => String(v ?? ''); // safe string
+const q = lower(search);
 
+  const filtered = (inventory ?? [])
+  .filter(item => lower(item?.name).includes(q))
+  .sort((a, b) => {
+    const res = s(a?.name).localeCompare(s(b?.name), undefined, {
+      sensitivity: 'base', // case-insensitive
+      numeric: true,       // "2" < "10"
+    });
+    return sortAsc ? res : -res;
+  });
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const paginatedItems = filtered.slice(
     (currentPage - 1) * itemsPerPage,
@@ -68,7 +73,7 @@ if(!realmId) return;
         return res.json();
       })
       .then(data => {
-        //console.log('Fetched inventory:', data);
+        console.log('Fetched inventory:', data);
         setInventory(data)
 
       })

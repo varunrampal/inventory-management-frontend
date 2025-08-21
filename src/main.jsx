@@ -16,6 +16,8 @@ import { RealmProvider } from './context/RealmContext';
 import './styles.css';
 import EstimatesList from './pages/EstimatesList';
 import EstimateDetails from './pages/EstimateDetails';
+import CreatePackage from './pages/CreatePackage';
+import PackageDetailsPage from './pages/PackageDetailsPage';
 
 
 // function ProtectedRoute({ children }) {
@@ -89,6 +91,17 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <EstimateDetails />
         </ProtectedRoute>
       } />
+      <Route path="/create-package/:estimateId" element={
+        <ProtectedRoute>
+          <CreatePackage />
+        </ProtectedRoute>
+      } />
+      <Route path="/package/details/:packageId" element={
+        <ProtectedRoute>
+          <PackageDetailsPage />
+        </ProtectedRoute>
+      } />
+      {/* Redirect all other paths to dashboard */}
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
   </BrowserRouter>

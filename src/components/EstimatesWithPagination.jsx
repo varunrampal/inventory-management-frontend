@@ -8,18 +8,26 @@ export default function EstimatesTableWithPagination() {
   const [estimates, setEstimates] = useState([]);
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [filters, setFilters] = useState({});
+  // const [filters, setFilters] = useState({});
   const [loading, setLoading] = useState(false);
   const limit = 15; // Number of items per page
-    const { realmId } = useRealm();
+  const { realmId } = useRealm();
+  const DEFAULT_FILTERS = { status: "All", dateRange: "This Month" };
 
       const BASE_URL = import.meta.env.PROD
   ? 'https://inventory-management-server-vue1.onrender.com'
   : 'http://localhost:4000';
 
-  useEffect(() => {
-    loadEstimates(currentPage + 1);
-  }, [currentPage, filters, realmId]);
+
+const [filters, setFilters] = useState(() => {
+    const saved = sessionStorage.getItem("estimates:filters");
+    return saved ? JSON.parse(saved) : DEFAULT_FILTERS;
+  });
+
+useEffect(() => {
+    sessionStorage.setItem("estimates:filters", JSON.stringify(filters));
+  }, [filters]);
+
 
   const loadEstimates = async (page) => {
     setLoading(true);
@@ -38,6 +46,11 @@ export default function EstimatesTableWithPagination() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadEstimates(currentPage + 1);
+  }, [currentPage, filters, realmId]);
+
 
   const handlePageClick = (event) => {
     setCurrentPage(event.selected);

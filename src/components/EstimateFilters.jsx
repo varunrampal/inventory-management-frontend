@@ -76,15 +76,16 @@ const [status, setStatus] = useState('All');
               onChange={handleDateChange}
               className="border px-3 py-2 rounded text-sm"
             >
-              <option>Custom</option>
+              <option>This Month</option>
+              <option>Last Month</option>
               <option>Today</option>
               <option>Yesterday</option>
               <option>This Week</option>
               <option>Last Week</option>
-              <option>This Month</option>
-              <option>Last Month</option>
               <option>This Year</option>
               <option>Last Year</option>
+              <option>Custom</option>
+            
             </select>
           </div>
     
