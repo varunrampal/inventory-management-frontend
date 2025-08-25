@@ -5,6 +5,7 @@ import ItemReservationInfo from '../components/ItemReservationInfo';
 import { useRealm } from '../context/RealmContext';
 import AssociatedPkgAndInvAccordion from '../components/AssociatedPkgAndInvAccordion';
 import ItemsAccordion from '../components/ItemsAccordion';
+import WhatsNextCard from '../components/WhatsNextCard';
 
 // This component fetches and displays details of a specific estimate
 // based on the ID from the URL parameters.
@@ -72,6 +73,14 @@ export default function EstimateDetails() {
                             Create Package
                         </button>
                     </div> */}
+                    <WhatsNextCard    
+  onConvert={(type) => {
+    if (type === "package")  navigate(`/create-package/${estimateId}`);
+    if (type === "shipment") navigate(`/create-shipment/${estimateId}`);
+    if (type === "invoice")  navigate(`/create-invoice/${estimateId}`);
+  }}
+  onCreatePackage={() => navigate(`/create-package/${estimateId}`)}
+/>
                     <table className="w-full border text-sm">
                         <thead className="bg-gray-100">
                             <tr>

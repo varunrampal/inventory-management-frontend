@@ -18,6 +18,7 @@ import EstimatesList from './pages/EstimatesList';
 import EstimateDetails from './pages/EstimateDetails';
 import CreatePackage from './pages/CreatePackage';
 import PackageDetailsPage from './pages/PackageDetailsPage';
+import EditPackagePage from './pages/EditPackagePage';
 
 
 // function ProtectedRoute({ children }) {
@@ -99,6 +100,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Route path="/package/details/:packageId" element={
         <ProtectedRoute>
           <PackageDetailsPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/package/edit/:id" element={
+        <ProtectedRoute>
+          <EditPackagePage />
         </ProtectedRoute>
       } />
       {/* Redirect all other paths to dashboard */}

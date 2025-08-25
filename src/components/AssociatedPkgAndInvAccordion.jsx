@@ -5,8 +5,33 @@ import PackagePrint from "./PackagePrint"; // Import the printable component
 import { useRealm } from "../context/RealmContext";
 import formatQBOAddress from "../helpers/FormatAddress"; // Adjust the import path as needed
 
+function AccordionArrow({ open, className = "" }) {
+  return (
+    <svg
+      viewBox="0 0 410.8 322.9"
+      aria-hidden="true"
+      className={`h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : ""} ${className}`}
+    >
+      <path
+        d="M248.1 295.5c-17.1 23.6-50 28.8-73.5 11.8-4.5-3.3-8.5-7.3-11.8-11.8l-84-116-66.2-91.4c-25.3-34.8-.4-83.6 42.6-83.6h300.3c43 0 67.9 48.7 42.7 83.5L332 179.5l-83.9 116z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+
+
+
 function SectionHeader({ title, isOpen, onToggle, count }) {
 
+    const onKey = (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onToggle?.();
+    }
+  };
+  
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-white">
       <div className="flex items-center gap-3">
@@ -61,9 +86,9 @@ export default function AssociatedPkgAndInvAccordion({
     return `${dd}-${mm}-${yyyy}`;
   };
 
-const contentRef = useRef(null);
+  const contentRef = useRef(null);
 
-const printNow =  useReactToPrint({
+  const printNow = useReactToPrint({
     contentRef,                          // <-- v3 API
     documentTitle: "Package",
   });// v3: call with ref later
@@ -80,6 +105,7 @@ const printNow =  useReactToPrint({
       notes: row.notes,
       customerName: estimate.customerName,
       driverName: row.driverName,
+      quantities:row.quantities
     };
 
     const itemsForPrint = row.lines ?? []; // or fetch items here if not present
@@ -92,28 +118,28 @@ const printNow =  useReactToPrint({
 
 
 
- const handlePrint = useReactToPrint({
+  const handlePrint = useReactToPrint({
     contentRef,                          // <-- v3 API
     documentTitle: "Package Slip",
   });
 
-if(realmId === "9341454894464212") {
-  companyDetails = {
-    name: "Peels Native Plants Ltd.",
-    address: "22064 64 Ave, Langley, BC V2Y 2H1",
-    phone: "(236) 591-8781",
-    email: "info@peelsnativeplants.com",
-    website: "www.peelsnativeplants.com",
-  };
-}else {
-  companyDetails = {
-    name: "Green Flow Nurseries Ltd.",
-    address: "35444 Hartley Rd, Mission, BC V2V 0A8",
-    phone: "(604) 217-1351",
-    email: "info@greenflownurseries.com",
-    website: "www.greenflownurseries.com",
-  };
-}
+  if (realmId === "9341454894464212") {
+    companyDetails = {
+      name: "Peels Native Plants Ltd.",
+      address: "22064 64 Ave, Langley, BC V2Y 2H1",
+      phone: "(236) 591-8781",
+      email: "info@peelsnativeplants.com",
+      website: "www.peelsnativeplants.com",
+    };
+  } else {
+    companyDetails = {
+      name: "Green Flow Nurseries Ltd.",
+      address: "35444 Hartley Rd, Mission, BC V2V 0A8",
+      phone: "(604) 217-1351",
+      email: "info@greenflownurseries.com",
+      website: "www.greenflownurseries.com",
+    };
+  }
 
 
   return (
@@ -131,14 +157,14 @@ if(realmId === "9341454894464212") {
           <div className="p-4 bg-gray-50">
             <div className="mb-3 flex items-center justify-between">
               {/* left content (optional) */}
-              <div className="ml-auto flex items-center gap-2">
+              {/* <div className="ml-auto flex items-center gap-2">
                 <button
                   onClick={() => navigate(`/create-package/${estimateId}`)}
                   className="rounded-md bg-green-600 px-2 py-1.5 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none"
                 >
                   Create Package
                 </button>
-              </div>
+              </div> */}
             </div>
 
             {packages.length ? (
@@ -166,28 +192,28 @@ if(realmId === "9341454894464212") {
                         {/* <td className="p-2">{pkg.createdAt || "—"}</td> */}
                         <td className="p-2">
                           <div className="flex gap-2">
-                    
+
                             <button
-                              onClick={() => navigate(`/packages/${pkg.id}/edit`)}
+                              onClick={() => navigate(`/package/edit/${pkg._id }`)}
                               className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
                             >
                               Edit
                             </button>
-                                   <button
-                             onClick={() => onPrintClick(pkg)}
+                            <button
+                              onClick={() => onPrintClick(pkg)}
                               className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
                             >
                               Print
                             </button>
 
-                                    <button
-                              onClick={() => navigate(`/packages/${pkg.id}`)}
+                            <button
+                              onClick={() => navigate(`/packages/${pkg._id}`)}
                               className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
                             >
                               Delete
                             </button>
                             {/* Render the print component off-screen but in the DOM */}
-                            
+
                           </div>
                         </td>
                       </tr>
@@ -195,16 +221,16 @@ if(realmId === "9341454894464212") {
                   </tbody>
                 </table>
                 <div style={{ position: "absolute", left: "-99999px", top: 0 }}>
-        {printData.pkg && (
-          <PackagePrint
-            ref={contentRef}
-            company={companyDetails}
-            pkg={printData.pkg}
-            items={printData.items}
-            taxRate={0.05}
-          />
-        )}
-      </div>
+                  {printData.pkg && (
+                    <PackagePrint
+                      ref={contentRef}
+                      company={companyDetails}
+                      pkg={printData.pkg}
+                      items={printData.items}
+                      taxRate={0.05}
+                    />
+                  )}
+                </div>
               </div>
             ) : (
               <p className="text-sm text-gray-500 italic">No packages found.</p>
@@ -261,7 +287,7 @@ if(realmId === "9341454894464212") {
                             >
                               Edit
                             </button>
-                    
+
                           </div>
                         </td>
                       </tr>
