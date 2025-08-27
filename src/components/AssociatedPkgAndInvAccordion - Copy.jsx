@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import PackagePrint from "./PackagePrint"; // Import the printable component
@@ -44,7 +44,7 @@ function SectionHeader({ title, isOpen, onToggle, count }) {
         onClick={onToggle}
         className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
       >
-        {/* {isOpen ? "Hide" : "Show"} */}
+        {isOpen ? "Hide" : "Show"}
         <svg
           className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
           viewBox="0 0 20 20"
@@ -72,23 +72,13 @@ export default function AssociatedPkgAndInvAccordion({
   packages = [],
   invoices = [],
   defaultOpen = "packages", // "packages" | "invoices" | null
-  onEstimateUpdate, // <-- OPTIONAL callback if you want parent to receive updated estimate
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const navigate = useNavigate();
   const { realmId } = useRealm();
-
-  // 🔹 local state copy so we can remove just one package row
-  const [pkgList, setPkgList] = useState(packages);
-  useEffect(() => setPkgList(packages), [packages]);
-
-  // track which package is being deleted
-  const [deletingId, setDeletingId] = useState(null);
-
   const isOpen = (key) => open === key;
   const toggle = (key) => setOpen(isOpen(key) ? null : key);
-
-  // (keep your helpers)
+  let companyDetails = {};
   const toDDMMYYYY_local = (input) => {
     const d = new Date(input);
     const dd = String(d.getDate()).padStart(2, "0");
@@ -98,87 +88,78 @@ export default function AssociatedPkgAndInvAccordion({
   };
 
   const contentRef = useRef(null);
-  const printNow = useReactToPrint({ contentRef, documentTitle: "Package" });
+
+  const printNow = useReactToPrint({
+    contentRef,                          // <-- v3 API
+    documentTitle: "Package",
+  });// v3: call with ref later
   const [printData, setPrintData] = useState({ pkg: null, items: [] });
 
-  const shipTo =
-    formatQBOAddress(estimate?.raw?.ShipAddr) ||
-    formatQBOAddress(estimate?.raw?.BillAddr);
-
+  const shipTo = formatQBOAddress(estimate?.raw?.ShipAddr) || formatQBOAddress(estimate?.raw?.BillAddr);
   const onPrintClick = (row) => {
+    // Shape data exactly as PackagePrint expects
     const pkgForPrint = {
       packageId: row.packageCode,
       estimateId: row.estimateId,
-      shipTo,
+      shipTo: shipTo,
       shipmentDate: row.shipmentDate || row.packageDate,
       notes: row.notes,
       customerName: estimate.customerName,
       driverName: row.driverName,
-      quantities: row.quantities,
+      quantities:row.quantities
     };
-    const itemsForPrint = row.lines ?? [];
+
+    const itemsForPrint = row.lines ?? []; // or fetch items here if not present
+
     setPrintData({ pkg: pkgForPrint, items: itemsForPrint });
+
+    // wait a tick so hidden component re-renders with the new data, then print
     setTimeout(() => printNow(contentRef), 0);
   };
 
-  // ✅ Delete handler with optimistic UI + rollback
-  const handlePackageDelete = async (id) => {
-    if (!window.confirm("Delete this package? Fulfilled counts will be adjusted.")) return;
 
-    // optimistic remove
-    const prev = pkgList;
-    setPkgList((list) => list.filter((p) => p._id !== id));
-    setDeletingId(id);
+const handlePackageDelete = async (id) => {
+  if (!window.confirm("Delete this package? Fulfilled counts will be adjusted.")) return;
 
-    try {
-      const res = await fetch(`${BASE_URL}/admin/packages/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+  const res = await fetch(`${BASE_URL}/admin/packages/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+  });
 
-      if (!res.ok) {
-        const msg = await res.text();
-        // rollback UI
-        setPkgList(prev);
-        alert(`Delete failed: ${msg}`);
-        return;
-      }
+  if (!res.ok) {
+    const msg = await res.text();
+    alert(`Delete failed: ${msg}`);
+    return;
+  }
 
-      // if backend returns updated estimate, bubble it up
-      const data = await res.json().catch(() => ({}));
-      if (data?.estimate && typeof onEstimateUpdate === "function") {
-        onEstimateUpdate(data.estimate);
-      }
-    } catch (err) {
-      // rollback UI
-      setPkgList(prev);
-      alert(`Delete failed: ${err.message}`);
-    } finally {
-      setDeletingId(null);
-    }
-  };
+  const { estimate } = await res.json(); // updated estimate with corrected fulfilled
+  // update local UI lists/state as needed
+};
+
 
   const handlePrint = useReactToPrint({
-    contentRef,
+    contentRef,                          // <-- v3 API
     documentTitle: "Package Slip",
   });
 
-  const companyDetails =
-    realmId === "9341454894464212"
-      ? {
-          name: "Peels Native Plants Ltd.",
-          address: "22064 64 Ave, Langley, BC V2Y 2H1",
-          phone: "(236) 591-8781",
-          email: "info@peelsnativeplants.com",
-          website: "www.peelsnativeplants.com",
-        }
-      : {
-          name: "Green Flow Nurseries Ltd.",
-          address: "35444 Hartley Rd, Mission, BC V2V 0A8",
-          phone: "(604) 217-1351",
-          email: "info@greenflownurseries.com",
-          website: "www.greenflownurseries.com",
-        };
+  if (realmId === "9341454894464212") {
+    companyDetails = {
+      name: "Peels Native Plants Ltd.",
+      address: "22064 64 Ave, Langley, BC V2Y 2H1",
+      phone: "(236) 591-8781",
+      email: "info@peelsnativeplants.com",
+      website: "www.peelsnativeplants.com",
+    };
+  } else {
+    companyDetails = {
+      name: "Green Flow Nurseries Ltd.",
+      address: "35444 Hartley Rd, Mission, BC V2V 0A8",
+      phone: "(604) 217-1351",
+      email: "info@greenflownurseries.com",
+      website: "www.greenflownurseries.com",
+    };
+  }
+
 
   return (
     <div className="rounded-lg border border-gray-200 overflow-hidden shadow-sm bg-white">
@@ -186,37 +167,57 @@ export default function AssociatedPkgAndInvAccordion({
       <div className="divide-y divide-gray-200">
         <SectionHeader
           title="📦 Packages"
-          count={pkgList.length} 
+          count={packages.length}
           isOpen={isOpen("packages")}
           onToggle={() => toggle("packages")}
         />
-
+        
         {isOpen("packages") && (
           <div className="p-4 bg-gray-50">
-            {pkgList.length ? (
+            <div className="mb-3 flex items-center justify-between">
+              {/* left content (optional) */}
+              {/* <div className="ml-auto flex items-center gap-2">
+                <button
+                  onClick={() => navigate(`/create-package/${estimateId}`)}
+                  className="rounded-md bg-green-600 px-2 py-1.5 text-sm font-medium text-white hover:bg-gray-700 focus:outline-none"
+                >
+                  Create Package
+                </button>
+              </div> */}
+            </div>
+
+            {packages.length ? (
               <div className="overflow-auto rounded-md border border-gray-200 bg-white">
                 <table className="min-w-full text-sm">
                   <thead className="bg-gray-100 text-gray-700">
                     <tr>
                       <th className="p-2 text-left">Package ID</th>
                       <th className="p-2 text-left">Package Date</th>
+                      {/* <th className="p-2 text-left">Status</th>
+                      <th className="p-2 text-left">Created</th>*/}
                       <th className="p-2 text-left">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {pkgList.map((pkg) => (
-                      <tr key={pkg._id ?? pkg.id} className="hover:bg-gray-50">
+                    {packages.map((pkg) => (
+                      <tr key={pkg.id} className="hover:bg-gray-50">
                         <td className="p-2">{pkg.packageCode}</td>
                         <td className="p-2">{toDDMMYYYY_local(pkg.packageDate)}</td>
+                        {/* <td className="p-2">
+                          <span className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                            {pkg.status || "—"}
+                          </span>
+                        </td> */}
+                        {/* <td className="p-2">{pkg.createdAt || "—"}</td> */}
                         <td className="p-2">
                           <div className="flex gap-2">
+
                             <button
-                              onClick={() => navigate(`/package/edit/${pkg._id}`)}
+                              onClick={() => navigate(`/package/edit/${pkg._id }`)}
                               className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
                             >
                               Edit
                             </button>
-
                             <button
                               onClick={() => onPrintClick(pkg)}
                               className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
@@ -226,24 +227,18 @@ export default function AssociatedPkgAndInvAccordion({
 
                             <button
                               onClick={() => handlePackageDelete(pkg._id)}
-                              disabled={deletingId === pkg._id}
-                              className={`rounded-md border px-2 py-1 text-xs ${
-                                deletingId === pkg._id
-                                  ? "border-gray-200 text-gray-400 cursor-not-allowed"
-                                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                              }`}
-                              title={deletingId === pkg._id ? "Deleting..." : "Delete"}
+                              className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
                             >
-                              {deletingId === pkg._id ? "Deleting…" : "Delete"}
+                              Delete
                             </button>
+                            {/* Render the print component off-screen but in the DOM */}
+
                           </div>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-
-                {/* hidden print component */}
                 <div style={{ position: "absolute", left: "-99999px", top: 0 }}>
                   {printData.pkg && (
                     <PackagePrint
@@ -263,9 +258,68 @@ export default function AssociatedPkgAndInvAccordion({
         )}
       </div>
 
-      {/* Invoices (unchanged) */}
-      {/* ... your existing invoice accordion ... */}
+      {/* Invoices */}
+      <div className="border-t border-gray-200 divide-y divide-gray-200">
+        <SectionHeader
+          title="🧾 Invoices"
+          count={invoices.length}
+          isOpen={isOpen("invoices")}
+          onToggle={() => toggle("invoices")}
+        />
+
+        {isOpen("invoices") && (
+          <div className="p-4 bg-gray-50">
+            {invoices.length ? (
+              <div className="overflow-auto rounded-md border border-gray-200 bg-white">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-gray-100 text-gray-700">
+                    <tr>
+                      <th className="p-2 text-left">Invoice ID</th>
+                      <th className="p-2 text-left">Date</th>
+                      <th className="p-2 text-left">Amount</th>
+                      <th className="p-2 text-left">Status</th>
+                      <th className="p-2 text-left">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {invoices.map((inv) => (
+                      <tr key={inv.id} className="hover:bg-gray-50">
+                        <td className="p-2">{inv.id}</td>
+                        <td className="p-2">{inv.date}</td>
+                        <td className="p-2">${Number(inv.amount || 0).toFixed(2)}</td>
+                        <td className="p-2">
+                          <span className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                            {inv.status || "—"}
+                          </span>
+                        </td>
+                        <td className="p-2">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => navigate(`/invoices/${inv.id}`)}
+                              className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                            >
+                              View
+                            </button>
+                            <button
+                              onClick={() => navigate(`/invoices/${inv.id}/pdf`)}
+                              className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
+                            >
+                              Edit
+                            </button>
+
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 italic">No invoices found.</p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-
