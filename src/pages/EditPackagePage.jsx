@@ -41,6 +41,7 @@ export default function EditPackagePage() {
                 });
                 if (!res.ok) throw new Error(`Load failed: ${res.status}`);
                 const data = await res.json();
+                console.log(data);
 
                 if (cancelled) return;
 
@@ -57,11 +58,11 @@ export default function EditPackagePage() {
                     driverName: data.driverName || "",
                     notes: data.notes || "",
                     quantities: pkg?.quantities instanceof Map
-            ? Object.fromEntries(pkg.quantities)
-            : { ...(pkg?.quantities || {}) },
+                        ? Object.fromEntries(pkg.quantities)
+                        : { ...(pkg?.quantities || {}) },
                 });
 
-              
+
             } catch (e) {
                 setError(e.message || "Failed to load package.");
             } finally {
@@ -120,13 +121,13 @@ export default function EditPackagePage() {
 
     const keyOf = (row) => String(row?.itemId ?? row?.ItemRef?.value ?? row?.name ?? "");
 
-const lineById = useMemo(() => Object.fromEntries(
-  (pkg?.lines || []).map((ln) => [keyOf(ln), ln])
-), [pkg?.lines]);
+    const lineById = useMemo(() => Object.fromEntries(
+        (pkg?.lines || []).map((ln) => [keyOf(ln), ln])
+    ), [pkg?.lines]);
 
-const estById = useMemo(() => Object.fromEntries(
-  (pkg?.items || []).map((it) => [keyOf(it), it])
-), [pkg?.items]);
+    const estById = useMemo(() => Object.fromEntries(
+        (pkg?.items || []).map((it) => [keyOf(it), it])
+    ), [pkg?.items]);
 
     const handleSave = async (e) => {
         e.preventDefault();
@@ -290,43 +291,43 @@ const estById = useMemo(() => Object.fromEntries(
                                 </tr>
                             </thead>
                             <tbody>
-                               {(
-  pkg?.quantities instanceof Map
-    ? Array.from(pkg.quantities.entries())      // handle Mongoose Map
-    : Object.entries(pkg?.quantities || {})     // handle plain object
-).map(([itemId, qty], idx) => {
-  const meta = estById[itemId] || lineById[itemId] || {};
-  const name = meta.name ?? itemId;
+                                {(
+                                    pkg?.quantities instanceof Map
+                                        ? Array.from(pkg.quantities.entries())      // handle Mongoose Map
+                                        : Object.entries(pkg?.quantities || {})     // handle plain object
+                                ).map(([itemId, qty], idx) => {
+                                    const meta = estById[itemId] || lineById[itemId] || {};
+                                    const name = meta.name ?? itemId;
 
-  const ordered = Number(meta.quantity ?? 0); // from estimate/lines if present
-  const current = Number(meta.fulfilled ?? form.quantities[itemId] ?? 0);
-  const newVal = form.quantities[itemId] ?? Number(qty || 0);
-  const err = errors[`q_${itemId}`];
+                                    const ordered = Number(meta.quantity ?? 0); // from estimate/lines if present
+                                    const current = Number(meta.fulfilled ?? form.quantities[itemId] ?? 0);
+                                    const newVal = form.quantities[itemId] ?? Number(qty || 0);
+                                    const err = errors[`q_${itemId}`];
 
-  return (
-    <tr key={itemId} className="border-b last:border-0">
-      <td className="py-2 pr-3">
-        <div className="font-medium">{name}</div>
-        {/* <div className="text-xs text-gray-500">ID: {itemId}</div> */}
-      </td>
-      <td className="py-2 pr-3">{ordered}</td>
-      <td className="py-2 pr-3">{current}</td>
-      <td className="py-2 pr-3">
-        <input
-          type="number"
-          min={0}
-          step={1}
-          value={newVal}
-          name={`q_${itemId}`}
-          data-itemid={itemId}
-          onChange={(e) => updateQuantity(itemId, e.target.value)}
-          className={`w-24 border rounded px-2 py-1 ${err ? "border-red-500" : ""}`}
-        />
-        {err && <div className="text-xs text-red-600 mt-1">{err}</div>}
-      </td>
-    </tr>
-  );
-})}
+                                    return (
+                                        <tr key={itemId} className="border-b last:border-0">
+                                            <td className="py-2 pr-3">
+                                                <div className="font-medium">{name}</div>
+                                                {/* <div className="text-xs text-gray-500">ID: {itemId}</div> */}
+                                            </td>
+                                            <td className="py-2 pr-3">{ordered}</td>
+                                            <td className="py-2 pr-3">{current}</td>
+                                            <td className="py-2 pr-3">
+                                                <input
+                                                    type="number"
+                                                    min={0}
+                                                    step={1}
+                                                    value={newVal}
+                                                    name={`q_${itemId}`}
+                                                    data-itemid={itemId}
+                                                    onChange={(e) => updateQuantity(itemId, e.target.value)}
+                                                    className={`w-24 border rounded px-2 py-1 ${err ? "border-red-500" : ""}`}
+                                                />
+                                                {err && <div className="text-xs text-red-600 mt-1">{err}</div>}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
 
                             </tbody>
                         </table>

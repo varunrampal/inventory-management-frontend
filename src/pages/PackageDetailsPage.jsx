@@ -6,7 +6,7 @@ import PackageDetails from '../components/PackageDetails';
 
 export default function PackageDetailsPage() {
     const { packageId } = useParams();
-
+    console.log('pkgId:', packageId);
     return (
         <Layout>
              <h1 className="text-2xl font-semibold mb-4">Package Details</h1>

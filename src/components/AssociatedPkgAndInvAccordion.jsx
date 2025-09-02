@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import PackagePrint from "./PackagePrint"; // Import the printable component
 import { useRealm } from "../context/RealmContext";
 import formatQBOAddress from "../helpers/FormatAddress"; // Adjust the import path as needed
+
 
 function AccordionArrow({ open, className = "" }) {
   return (
@@ -22,43 +24,48 @@ function AccordionArrow({ open, className = "" }) {
 
 function SectionHeader({ title, isOpen, onToggle, count }) {
 
-    const onKey = (e) => {
+  const onKey = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       onToggle?.();
     }
   };
-  
-  return (
-    <div className="flex items-center justify-between px-4 py-3 bg-white">
-      <div className="flex items-center gap-3">
-        <h3 className="text-base font-semibold text-gray-800">{title}</h3>
-        {typeof count === "number" && (
-          <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-700">
-            {count}
-          </span>
-        )}
-      </div>
 
-      <button
-        onClick={onToggle}
-        className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
-      >
-        {/* {isOpen ? "Hide" : "Show"} */}
-        <svg
-          className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
+
+
+  return (
+    <>
+
+      <div className="flex items-center justify-between px-4 py-3 bg-white">
+        <div className="flex items-center gap-3">
+          <h3 className="text-base font-semibold text-gray-800">{title}</h3>
+          {typeof count === "number" && (
+            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-700">
+              {count}
+            </span>
+          )}
+        </div>
+
+        <button
+          onClick={onToggle}
+          className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
         >
-          <path
-            fillRule="evenodd"
-            d="M5.23 7.21a.75.75 0 011.06.02L10 10.173l3.71-2.943a.75.75 0 111.06 1.06l-4.24 3.364a.75.75 0 01-.94 0L5.25 8.29a.75.75 0 01-.02-1.08z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </button>
-    </div>
+          {/* {isOpen ? "Hide" : "Show"} */}
+          <svg
+            className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              d="M5.23 7.21a.75.75 0 011.06.02L10 10.173l3.71-2.943a.75.75 0 111.06 1.06l-4.24 3.364a.75.75 0 01-.94 0L5.25 8.29a.75.75 0 01-.02-1.08z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -74,6 +81,10 @@ export default function AssociatedPkgAndInvAccordion({
   defaultOpen = "packages", // "packages" | "invoices" | null
   onEstimateUpdate, // <-- OPTIONAL callback if you want parent to receive updated estimate
 }) {
+
+  const CONFIRM_TIMEOUT = 5000;  // confirm auto-hides after 5s if no action
+  const SUCCESS_TIMEOUT = 2200;
+  const confirmIdRef = useRef(null)
   const [open, setOpen] = useState(defaultOpen);
   const navigate = useNavigate();
   const { realmId } = useRealm();
@@ -163,22 +174,76 @@ export default function AssociatedPkgAndInvAccordion({
     documentTitle: "Package Slip",
   });
 
+
+  // show a confirm toast
+  const confirmDeletePackage = (id) => {
+    // Save toast id so we can dismiss it programmatically
+    confirmIdRef.current = toast.warning("Delete this package?", {
+      description: "Package will be deleted permanently.",
+      duration: Infinity, // stays until user acts
+      action: {
+        label: "Delete",
+        onClick: () => {
+          // 🔸 Hide the confirm toast right away
+          toast.dismiss(confirmIdRef.current);
+          doDelete(id);
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => toast.dismiss(confirmIdRef.current),
+      },
+    });
+  };
+
+  // actual delete (with optimistic UI + toast.promise)
+  const doDelete = (id) => {
+    // Extra safety: ensure confirm toast is gone even if action handler didn’t run
+    toast.dismiss(confirmIdRef.current);
+    setDeletingId(id);
+
+    return toast.promise(
+      (async () => {
+        const res = await fetch(`${BASE_URL}/admin/packages/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json().catch(() => ({}));
+        if (data?.estimate && typeof onEstimateUpdate === "function") {
+          onEstimateUpdate(data.estimate);
+        }
+        // Optimistically remove from UI if you keep local list:
+        setPkgList((list) => list.filter((p) => p._id !== id));
+        return "Package deleted";
+      })(),
+      {
+        loading: "Deleting…",
+        success: (msg) => msg,
+        error: (err) => err.message || "Delete failed",
+      },
+      { duration: SUCCESS_TIMEOUT } // success/error auto-dismiss
+    ).finally(() => setDeletingId(null));
+  };
+
+
+
   const companyDetails =
     realmId === "9341454894464212"
       ? {
-          name: "Peels Native Plants Ltd.",
-          address: "22064 64 Ave, Langley, BC V2Y 2H1",
-          phone: "(236) 591-8781",
-          email: "info@peelsnativeplants.com",
-          website: "www.peelsnativeplants.com",
-        }
+        name: "Peels Native Plants Ltd.",
+        address: "22064 64 Ave, Langley, BC V2Y 2H1",
+        phone: "(236) 591-8781",
+        email: "info@peelsnativeplants.com",
+        website: "www.peelsnativeplants.com",
+      }
       : {
-          name: "Green Flow Nurseries Ltd.",
-          address: "35444 Hartley Rd, Mission, BC V2V 0A8",
-          phone: "(604) 217-1351",
-          email: "info@greenflownurseries.com",
-          website: "www.greenflownurseries.com",
-        };
+        name: "Green Flow Nurseries Ltd.",
+        address: "35444 Hartley Rd, Mission, BC V2V 0A8",
+        phone: "(604) 217-1351",
+        email: "info@greenflownurseries.com",
+        website: "www.greenflownurseries.com",
+      };
 
   return (
     <div className="rounded-lg border border-gray-200 overflow-hidden shadow-sm bg-white">
@@ -186,7 +251,7 @@ export default function AssociatedPkgAndInvAccordion({
       <div className="divide-y divide-gray-200">
         <SectionHeader
           title="📦 Packages"
-          count={pkgList.length} 
+          count={pkgList.length}
           isOpen={isOpen("packages")}
           onToggle={() => toggle("packages")}
         />
@@ -224,7 +289,7 @@ export default function AssociatedPkgAndInvAccordion({
                               Print
                             </button>
 
-                            <button
+                            {/* <button
                               onClick={() => handlePackageDelete(pkg._id)}
                               disabled={deletingId === pkg._id}
                               className={`rounded-md border px-2 py-1 text-xs ${
@@ -235,7 +300,19 @@ export default function AssociatedPkgAndInvAccordion({
                               title={deletingId === pkg._id ? "Deleting..." : "Delete"}
                             >
                               {deletingId === pkg._id ? "Deleting…" : "Delete"}
+                            </button> */}
+
+                            <button
+                              onClick={() => confirmDeletePackage(pkg._id)}
+                              disabled={deletingId === pkg._id}
+                              className={`rounded-md border px-2 py-1 text-xs ${deletingId === pkg._id
+                                  ? "border-gray-200 text-gray-400 cursor-not-allowed"
+                                  : "border-gray-300 text-gray-700 hover:bg-gray-50"
+                                }`}
+                            >
+                              {deletingId === pkg._id ? "Deleting…" : "Delete"}
                             </button>
+
                           </div>
                         </td>
                       </tr>

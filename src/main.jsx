@@ -97,7 +97,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <CreatePackage />
         </ProtectedRoute>
       } />
-      <Route path="/package/details/:packageId" element={
+      <Route path="/package/details/:id" element={
         <ProtectedRoute>
           <PackageDetailsPage />
         </ProtectedRoute>
