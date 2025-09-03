@@ -6,28 +6,26 @@ import { useRealm } from '../context/RealmContext';
 
 export default function EstimatesTableWithPagination() {
   const [estimates, setEstimates] = useState([]);
-  const [pageCount, setPageCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
-  // const [filters, setFilters] = useState({});
+  const [total, setTotal] = useState(0);            // NEW
+  const [currentPage, setCurrentPage] = useState(0); // 0-based
   const [loading, setLoading] = useState(false);
-  const limit = 15; // Number of items per page
+  const limit = 15;
+
   const { realmId } = useRealm();
   const DEFAULT_FILTERS = { status: "All", dateRange: "This Month" };
 
-      const BASE_URL = import.meta.env.PROD
-  ? 'https://inventory-management-server-vue1.onrender.com'
-  : 'http://localhost:4000';
+  const BASE_URL = import.meta.env.PROD
+    ? 'https://inventory-management-server-vue1.onrender.com'
+    : 'http://localhost:4000';
 
-
-const [filters, setFilters] = useState(() => {
+  const [filters, setFilters] = useState(() => {
     const saved = sessionStorage.getItem("estimates:filters");
     return saved ? JSON.parse(saved) : DEFAULT_FILTERS;
   });
 
-useEffect(() => {
+  useEffect(() => {
     sessionStorage.setItem("estimates:filters", JSON.stringify(filters));
   }, [filters]);
-
 
   const loadEstimates = async (page) => {
     setLoading(true);
@@ -35,11 +33,12 @@ useEffect(() => {
       const res = await fetch(`${BASE_URL}/admin/estimates/filter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...filters, realmId, page, limit: 15 })
+        body: JSON.stringify({ ...filters, realmId, page, limit })
       });
       const data = await res.json();
+
       setEstimates(data.estimates || []);
-      setPageCount(Math.ceil(data.total / limit));
+      setTotal(data.total || 0); // NEW: remember total
     } catch (err) {
       console.error('Failed to load estimates:', err);
     } finally {
@@ -48,73 +47,93 @@ useEffect(() => {
   };
 
   useEffect(() => {
+    // API expects 1-based page; convert from 0-based
     loadEstimates(currentPage + 1);
   }, [currentPage, filters, realmId]);
 
+  // ---- Pager derived values ----
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const start = estimates.length ? currentPage * limit + 1 : 0;
+  const end = currentPage * limit + estimates.length;
 
-  const handlePageClick = (event) => {
-    setCurrentPage(event.selected);
-  };
+  const goPrev = () => setCurrentPage((p) => Math.max(0, p - 1));
+  const goNext = () => setCurrentPage((p) => Math.min(totalPages - 1, p + 1));
 
   return (
     <div className="p-4">
-      {/* <h2 className="text-xl font-semibold mb-4">Estimates</h2> */}
-
-      <EstimateFilters onFilterChange={(f) => {
-        setFilters(f);
-        setCurrentPage(0);
-      }} />
+      <EstimateFilters
+        onFilterChange={(f) => {
+          setFilters(f);
+          setCurrentPage(0);
+        }}
+      />
 
       {loading ? (
         <p>Loading...</p>
       ) : (
         <>
-          <table className="w-full border text-sm">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="border px-2 py-1 text-left">Estimate ID</th>
-                <th className="border px-2 py-1 text-left">Customer</th>
-                <th className="border px-2 py-1 text-left">Txn Date</th>
-                <th className="border px-2 py-1 text-left">Status</th>
-                <th className="border px-2 py-1 text-left">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {estimates.map((est, idx) => (
-                <tr key={idx} className="border-b">
-                  <td className="px-2 py-1">
-                    <Link to={`/estimate/details/${est.estimateId}`} className="text-blue-500 hover:underline ml-2">
-                      {est.estimateId}
-                    </Link>
-                  </td>
-                  <td className="px-2 py-1">{est.customerName}</td>
-                  <td className="px-2 py-1">
-                    {new Date(est.txnDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-2 py-1">{est.txnStatus || '-'}</td>
-                  <td className="px-2 py-1">${est.totalAmount?.toFixed(2)}</td>
+          <div className="rounded-xl border overflow-x-auto bg-white">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50 sticky top-0">
+                <tr className="text-left text-gray-600">
+                  <th className="px-3 py-2">Estimate#</th>
+                  <th className="px-3 py-2">Customer</th>
+                  <th className="px-3 py-2">Txn Date</th>
+                  <th className="px-3 py-2">Status</th>
+                  <th className="px-3 py-2">Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y">
+                {estimates.map((est, idx) => (
+                  <tr key={idx} className="border-b">
+                    <td className="px-3 py-2">
+                      <Link
+                        to={`/estimate/details/${est.estimateId}`}
+                        className="text-blue-600 hover:underline ml-2"
+                      >
+                        {est.estimateId}
+                      </Link>
+                    </td>
+                    <td className="px-3 py-2">{est.customerName}</td>
+                    <td className="px-3 py-2">
+                      {new Date(est.txnDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-3 py-2">{est.txnStatus || '-'}</td>
+                    <td className="px-3 py-2">
+                      ${Number(est.totalAmount || 0).toFixed(2)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          <div className="mt-4 flex justify-center">
-            <ReactPaginate
-             previousLabel="← Prev"
-              nextLabel="Next →"
-              breakLabel="..."
-              onPageChange={handlePageClick}
-              pageCount={pageCount}
-              forcePage={currentPage}
-              marginPagesDisplayed={1}
-              pageRangeDisplayed={3}
-              containerClassName="flex gap-2 text-sm"
-              pageClassName="px-3 py-1 border rounded"
-              activeClassName="bg-blue-500 text-white"
-              previousClassName="px-3 py-1 border rounded"
-              nextClassName="px-3 py-1 border rounded"
-              disabledClassName="opacity-50 cursor-not-allowed"
-            />
+          {/* ---- Pager (matches your desired UI) ---- */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-gray-500">
+                Showing {start}–{end} of {total}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={goPrev}
+                  disabled={currentPage <= 0}
+                  className="rounded-lg border px-3 py-1.5 disabled:opacity-40"
+                >
+                  Prev
+                </button>
+                <span className="text-sm px-1 pt-1.5">
+                  {totalPages ? currentPage + 1 : 0} / {totalPages}
+                </span>
+                <button
+                  onClick={goNext}
+                  disabled={currentPage >= totalPages - 1}
+                  className="rounded-lg border px-3 py-1.5 disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         </>
       )}

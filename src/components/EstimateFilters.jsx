@@ -43,11 +43,11 @@ const [status, setStatus] = useState('All');
   return (
      <div className="flex flex-wrap gap-6 mb-4 items-end">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <label className="block text-xs font-bold text-gray-500 mb-1">Status</label>
             <select
               value={status}
               onChange={handleStatusChange}
-              className="border px-3 py-2 rounded text-sm"
+             className="rounded-lg border px-3 py-2 bg-white"
             >
               <option>All</option>
               <option>Accepted</option>
@@ -70,11 +70,11 @@ const [status, setStatus] = useState('All');
     
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estimate Date</label>
+            <label className="block text-xs font-bold text-gray-500 mb-1">Estimate Date</label>
             <select
               value={dateRange}
               onChange={handleDateChange}
-              className="border px-3 py-2 rounded text-sm"
+              className="rounded-lg border px-3 py-2 bg-white"
             >
               <option>This Month</option>
               <option>Last Month</option>
@@ -92,33 +92,33 @@ const [status, setStatus] = useState('All');
           {dateRange === 'Custom' && (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <label className="block text-xs font-bold text-gray-500 mb-1">Start Date</label>
                 <DatePicker
                   selected={customStartDate}
                   onChange={handleCustomStartChange}
-                  className="border px-3 py-2 rounded text-sm"
+                  className="rounded-lg border px-3 py-2 bg-white"
                   placeholderText="Start"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <label className="block text-xs font-bold text-gray-500 mb-1">End Date</label>
                 <DatePicker
                   selected={customEndDate}
                   onChange={handleCustomEndChange}
-                  className="border px-3 py-2 rounded text-sm"
+                  className="rounded-lg border px-3 py-2 bg-white"
                   placeholderText="End"
                 />
               </div>
  
             </>
           )}
-                         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
-          <input
-            type="text"
-            name="customerName"
-            value={customerName}
-            onChange={handleCustomerNameChange}
+          <div>
+            <label className="block text-xs font-bold text-gray-500 mb-1">Customer Name</label>
+            <input
+              type="text"
+              name="customerName"
+              value={customerName}
+              onChange={handleCustomerNameChange}
             className="border px-3 py-2 rounded text-sm"
           />
         </div>
