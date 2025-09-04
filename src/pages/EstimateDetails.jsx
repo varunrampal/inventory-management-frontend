@@ -10,9 +10,13 @@ import WhatsNextCard from '../components/WhatsNextCard';
 // This component fetches and displays details of a specific estimate
 // based on the ID from the URL parameters.
 export default function EstimateDetails() {
-    const BASE_URL = import.meta.env.PROD
-        ? 'https://inventory-management-server-vue1.onrender.com'
-        : 'http://localhost:4000';
+    
+    // const BASE_URL = import.meta.env.PROD
+    //     ? 'https://inventory-management-server-vue1.onrender.com'
+    //     : 'http://localhost:4000';
+
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
     const { estimateId } = useParams();
     const [estimate, setEstimate] = useState(null);
     const [loading, setLoading] = useState(true);

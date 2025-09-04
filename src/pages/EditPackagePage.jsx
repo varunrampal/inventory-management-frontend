@@ -3,9 +3,11 @@ import { useEffect, useMemo, useState, useCallback} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from '../components/Layout';
 
-const BASE_URL = import.meta.env.PROD
-    ? "https://inventory-management-server-vue1.onrender.com"
-    : "http://localhost:4000";
+// const BASE_URL = import.meta.env.PROD
+//     ? "https://inventory-management-server-vue1.onrender.com"
+//     : "http://localhost:4000";
+
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function EditPackagePage() {
   const { id } = useParams(); // packageId from route /edit-package/:id

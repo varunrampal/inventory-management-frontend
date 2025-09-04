@@ -18,9 +18,11 @@ export default function ItemReservationInfo({ itemId, itemName,status = '', item
     customEndDate: null
   });
 
-     const BASE_URL = import.meta.env.PROD
-  ? 'https://inventory-management-server-vue1.onrender.com'
-  : 'http://localhost:4000';
+  //    const BASE_URL = import.meta.env.PROD
+  // ? 'https://inventory-management-server-vue1.onrender.com'
+  // : 'http://localhost:4000';
+
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const fetchData = async (page = 1) => {
     const res = await fetch(`${BASE_URL}/admin/estimates/item-by-name/filter`, {
