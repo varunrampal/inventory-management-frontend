@@ -20,6 +20,8 @@ import CreatePackage from './pages/CreatePackage';
 import PackageDetailsPage from './pages/PackageDetailsPage';
 import EditPackagePage from './pages/EditPackagePage';
 import PackagesPage from './pages/PackagesPage';
+import Eula from './pages/Eula';
+import Privacy from './pages/Privacy';
 
 
 // function ProtectedRoute({ children }) {
@@ -113,6 +115,33 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <PackagesPage />
         </ProtectedRoute>
       } />
+       <Route
+          path="/eula"
+          element={
+            <Eula
+              appName="InvTrack"
+              companyName="Green Flow Nurseries Ltd."
+              effectiveDate="September 3, 2025"
+              privacyUrl="/privacy"
+              contactEmail="info@greenflownurseries.com"
+              address="35444 Hartley Rd, Mission, BC, V2V 0A8"
+              jurisdiction="British Columbia, Canada"
+            />
+          }
+        />
+         <Route
+          path="/privacy"
+          element={
+            <Privacy
+              appName="InvTrack"
+              companyName="Green Flow Nurseries Ltd."
+              effectiveDate="September 3, 2025"
+              contactEmail="support@greenflownurseries.com"
+              address="35444 Hartley Rd, Mission, BC, V2V 0A8"
+              jurisdiction="British Columbia, Canada"
+            />
+          }
+        />
       {/* Redirect all other paths to dashboard */}
       <Route path="*" element={<Navigate to="/dashboard" />} />
     </Routes>
