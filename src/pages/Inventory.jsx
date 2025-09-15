@@ -19,7 +19,7 @@ export default function Inventory() {
   const [activeTab, setActiveTab] = useState('Items');
   const [currentPage, setCurrentPage] = useState(1);
    const { realmId } = useRealm();
-  const itemsPerPage = 5;
+  const itemsPerPage = 15;
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 

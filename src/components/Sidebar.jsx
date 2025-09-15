@@ -141,8 +141,8 @@ export default function Sidebar({ open, setOpen }) {
             </SubMenu>
 
             {/* QuickBooks / Sync group */}
-            <SubMenu label="QuickBooks Sync" activeWhen={["/sync"]}>
-              <NavItem to="/sync" label="Run Sync" />
+            <SubMenu label="QuickBooks" activeWhen={["/conncet-qb"]}>
+              <NavItem to="/connect-qb" label="Connect QuickBooks" />
               {/* <NavItem to="/sync/logs" label="Sync Logs" />
               <NavItem to="/sync/tokens" label="Tokens" /> */}
             </SubMenu>

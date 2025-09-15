@@ -105,15 +105,27 @@ export default function ItemsAccordion({
                       )}
                     </tr>
                   ))}
+<tr className="bg-gray-50 font-semibold">
+  {/* empty first cell to align with Item Name column */}
+  <td className="p-2"></td>
 
-                  <tr className="bg-gray-50 font-semibold">
-                    <td className="p-2 text-right">Total quantity:</td>
-                    <td className="p-2 text-right">{totalQty}</td>
-                    {hasRate && <td className="p-2"></td>}
-                    {hasAmount && <td className="p-2"></td>}
-                  </tr>
+  {/* total quantity */}
+  <td className="p-2 text-right">
+    Qty: {totalQty}
+  </td>
 
-                  {/* {(hasAmount || hasRate || typeof totalAmount === "number") && (
+  {/* if you want rate column to stay aligned, leave it blank */}
+  {hasRate && <td className="p-2"></td>}
+
+  {/* total amount right next to quantity */}
+  {hasAmount && (
+    <td className="p-2 text-right">
+      Total: {computedTotal !== null ? `$${computedTotal.toFixed(2)}` : "—"}
+    </td>
+  )}
+</tr>
+{/* 
+                  {(hasAmount || hasRate || typeof totalAmount === "number") && (
                     <tr className="bg-gray-50 font-semibold">
                       <td className="p-2 text-right" colSpan={hasRate && hasAmount ? 3 : hasRate || hasAmount ? 2 : 1}>
                         Total:

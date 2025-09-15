@@ -5,6 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
+import Connect from './pages/ConnectQB';
 import Analytics from './pages/Analytics';
 import LowStockItems from './pages/LowStockItems';
 import ItemDetails from './pages/ItemDetails';
@@ -22,6 +23,7 @@ import EditPackagePage from './pages/EditPackagePage';
 import PackagesPage from './pages/PackagesPage';
 import Eula from './pages/Eula';
 import Privacy from './pages/Privacy';
+import QuickBooksConnected from './pages/QuickBooksConnected';
 
 
 // function ProtectedRoute({ children }) {
@@ -80,6 +82,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <SyncQuickbooks />
           </ProtectedRoute>
         } />
+          <Route 
+        path="/sync/:realmId" element={
+          <ProtectedRoute>
+            <SyncQuickbooks />
+          </ProtectedRoute>
+        } />
         <Route path="/estimates" element={
           <ProtectedRoute>
             <EstimatesList/>
@@ -90,7 +98,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <EstimatesList />
           </ProtectedRoute>
         } />
-      <Route path="/estimate/details/:estimateId" element={
+      <Route path="/estimate/details/:DocNumber" element={
         <ProtectedRoute>
           <EstimateDetails />
         </ProtectedRoute>
@@ -115,7 +123,31 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <PackagesPage />
         </ProtectedRoute>
       } />
-       <Route
+      <Route
+        path="/connect-qb"
+        element={
+          <ProtectedRoute>
+            <Connect />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+  path="/qb-connected"
+  element={
+    <ProtectedRoute>
+      <QuickBooksConnected />
+    </ProtectedRoute>
+  }
+/>
+      <Route
+        path="/qb-connected/:realmId"
+        element={
+          <ProtectedRoute>
+            <QuickBooksConnected />
+          </ProtectedRoute>
+        }
+      />
+      <Route
           path="/eula"
           element={
             <Eula

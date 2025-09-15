@@ -17,7 +17,8 @@ export default function EstimateDetails() {
 
     const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-    const { estimateId } = useParams();
+    // const { estimateId } = useParams();
+    const { DocNumber } = useParams();
     const [estimate, setEstimate] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -31,8 +32,13 @@ export default function EstimateDetails() {
                 setLoading(true);
                 setError('');
 
-                if (!estimateId && !realmId) throw new Error('Estimate ID and Realm ID are required');
-                const response = await fetch(`${BASE_URL}/admin/estimates/details/${estimateId}/${realmId}`, {
+
+              
+
+                // if (!estimateId && !realmId) throw new Error('Estimate ID and Realm ID are required');
+                 if (!DocNumber && !realmId) throw new Error('Document Number and Realm ID are required');
+                   const response = await fetch(`${BASE_URL}/admin/estimates/details/by-doc/${DocNumber}/${realmId}`, {
+                // const response = await fetch(`${BASE_URL}/admin/estimates/details/${estimateId}/${realmId}`, {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('token')}`
                     }
@@ -49,7 +55,8 @@ export default function EstimateDetails() {
             }
         };
         fetchEstimate();
-    }, [estimateId, realmId]);
+         
+    }, [DocNumber, realmId]);
 
 
     const toggleItems = (index) => {
@@ -77,18 +84,18 @@ export default function EstimateDetails() {
                             Create Package
                         </button>
                     </div> */}
-                    <WhatsNextCard    
-  onConvert={(type) => {
-    if (type === "package")  navigate(`/create-package/${estimateId}`);
-    if (type === "shipment") navigate(`/create-shipment/${estimateId}`);
-    if (type === "invoice")  navigate(`/create-invoice/${estimateId}`);
-  }}
-  onCreatePackage={() => navigate(`/create-package/${estimateId}`)}
-/>
+                    <WhatsNextCard
+                        onConvert={(type) => {
+                            if (type === "package") navigate(`/create-package/${estimate.estimateId}`);
+                            if (type === "shipment") navigate(`/create-shipment/${estimate.estimateId}`);
+                            if (type === "invoice") navigate(`/create-invoice/${estimate.estimateId}`);
+                        }}
+                        onCreatePackage={() => navigate(`/create-package/${estimate.estimateId}`)}
+                    />
                     <table className="w-full border text-sm">
                         <thead className="bg-gray-100">
                             <tr>
-                                <th className="border px-2 py-1 text-left">Estimate ID</th>
+                                <th className="border px-2 py-1 text-left">Estimate#</th>
                                 <th className="border px-2 py-1 text-left">Customer</th>
                                 <th className="border px-2 py-1 text-left">Txn Date</th>
                                 <th className="border px-2 py-1 text-left">Status</th>
@@ -98,7 +105,7 @@ export default function EstimateDetails() {
                         </thead>
                         <tbody>
                             <tr className="border-b">
-                                <td className="px-2 py-1">{estimate.estimateId}</td>
+                                <td className="px-2 py-1">{estimate.raw.DocNumber}</td>
                                 <td className="px-2 py-1">{estimate.customerName || 'N/A'}</td>
                                 <td className="px-2 py-1">{estimate.txnDate || 'N/A'}</td>
                                 <td className="px-2 py-1">{estimate.txnStatus || 'N/A'}</td>

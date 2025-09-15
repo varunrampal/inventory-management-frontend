@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate, useParams, useSearchParams, Link } from "react-router-dom";
 import { toast } from 'react-toastify';
 import Layout from '../components/Layout';
 
@@ -13,8 +14,8 @@ export default function TokenDashboard() {
   //   : 'http://localhost:4000';
 
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-
+  const { realmId } = useParams();
+console.log(realmId);
   // useEffect(() => {
   //   fetch('/companies.json')
   //     .then(res => res.json())
@@ -96,30 +97,41 @@ export default function TokenDashboard() {
             </tr>
           </thead>
           <tbody>
-            {companies.map((c, i) => (
-              <tr key={i} className="border-t">
-                <td className="px-4 py-2">{c.name}</td>
-                <td className="px-4 py-2">{c.realmId}</td>
-                <td className="px-4 py-2">
-                  {new Date(c.lastSync).toLocaleString()}
-                </td>
-                <td className="px-4 py-2 flex gap-2">
-                  <button
-                    onClick={() => handleConnect(c.realmId)}
-                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                  >
-                    Connect
-                  </button>
-                  <button
-                    onClick={() => handleManualSync(c.realmId)}
-                    disabled={syncing[c.realmId]}
-                    className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:opacity-50"
-                  >
-                    {syncing[c.realmId] ? 'Syncing...' : 'Sync Now'}
-                  </button>
-                </td>
-              </tr>
-            ))}
+{companies.map((c, i) =>
+  String(c.realmId) === String(realmId) && (
+    <tr key={i} className="border-t">
+      <td className="px-4 py-2">{c.name}</td>
+      <td className="px-4 py-2">{c.realmId}</td>
+      <td className="px-4 py-2">
+        {new Date(c.lastSync).toLocaleString()}
+      </td>
+      <td className="px-4 py-2 flex gap-2">
+        {/* <button
+          onClick={() => handleConnect(c.realmId)}
+          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+        >
+          Connect
+        </button> */}
+
+        {/* <button
+          onClick={() => handleManualSync(c.realmId)}
+          disabled={syncing[c.realmId]}
+          className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:opacity-50"
+        >
+          {syncing[c.realmId] ? 'Syncing...' : 'Sync Now'}
+        </button> */}
+
+        <button
+          onClick={() => handleManualSync(c.realmId)}
+          disabled={syncing[c.realmId]}
+          className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 disabled:opacity-50"
+        >
+          {syncing[c.realmId] ? "Syncing..." : "Sync Now"}
+        </button>
+      </td>
+    </tr>
+  )
+)}
           </tbody>
         </table>
       </div>

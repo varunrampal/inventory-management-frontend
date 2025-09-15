@@ -80,7 +80,7 @@ export default function EstimatesTableWithPagination() {
                 <tr className="text-left text-gray-600">
                   <th className="px-3 py-2">Estimate#</th>
                   <th className="px-3 py-2">Customer</th>
-                  <th className="px-3 py-2">Txn Date</th>
+                  <th className="px-3 py-2">Date</th>
                   <th className="px-3 py-2">Status</th>
                   <th className="px-3 py-2">Total</th>
                 </tr>
@@ -90,15 +90,17 @@ export default function EstimatesTableWithPagination() {
                   <tr key={idx} className="border-b">
                     <td className="px-3 py-2">
                       <Link
-                        to={`/estimate/details/${est.estimateId}`}
+                        to={`/estimate/details/${est.raw.DocNumber}`}
                         className="text-blue-600 hover:underline ml-2"
                       >
-                        {est.estimateId}
+                        {est.raw.DocNumber}
                       </Link>
                     </td>
                     <td className="px-3 py-2">{est.customerName}</td>
                     <td className="px-3 py-2">
-                      {new Date(est.txnDate).toLocaleDateString()}
+                      {console.log('Date:', est.txnDate)}
+                      {est.txnDate || '-'}
+                      {/* {new Date(est.txnDate).toLocaleDateString()} */}
                     </td>
                     <td className="px-3 py-2">{est.txnStatus || '-'}</td>
                     <td className="px-3 py-2">
