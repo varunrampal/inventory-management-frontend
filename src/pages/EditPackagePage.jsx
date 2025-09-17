@@ -219,7 +219,8 @@ export default function EditPackagePage() {
                   Package# <span className="font-semibold">{pkg?.packageCode}</span>
                 </div>
                 <div className="text-right">
-                  Estimate# <span className="font-semibold">{pkg?.estimateId}</span>
+                  {/* Estimate# <span className="font-semibold">{pkg?.estimateId}</span> */}
+                   Estimate# <span className="font-semibold">{pkg?.docNumber}</span>
                 </div>
               </div>
 

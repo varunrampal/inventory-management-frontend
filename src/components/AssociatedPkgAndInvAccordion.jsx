@@ -123,12 +123,14 @@ export default function AssociatedPkgAndInvAccordion({
       packageId: row.packageCode,
       estimateId: row.estimateId,
       shipTo,
-      shipmentDate: row.shipmentDate || row.packageDate,
+      shipmentDate: row.shipmentDate.slice(0,10) || row.packageDate,
       notes: row.notes,
       customerName: estimate.customerName,
       driverName: row.driverName,
       quantities: row.quantities,
+      docNumber: estimate.raw.DocNumber,
     };
+    console.log(pkgForPrint)
     const itemsForPrint = row.lines ?? [];
     setPrintData({ pkg: pkgForPrint, items: itemsForPrint });
     setTimeout(() => printNow(contentRef), 0);
@@ -274,7 +276,9 @@ export default function AssociatedPkgAndInvAccordion({
                     {pkgList.map((pkg) => (
                       <tr key={pkg._id ?? pkg.id} className="hover:bg-gray-50">
                         <td className="p-2">{pkg.packageCode}</td>
-                        <td className="p-2">{toDDMMYYYY_local(pkg.packageDate)}</td>
+                         <td className="p-2">{pkg.packageDate?.slice(0,10)}</td>
+                        {/* <td className="p-2">{toDDMMYYYY_local(pkg.packageDate)}</td> */}
+                          {/* <td className="p-2">{pkg.packageDate}</td> */}
                         <td className="p-2">
                           <div className="flex gap-2">
                             <button

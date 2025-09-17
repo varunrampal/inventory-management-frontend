@@ -4,9 +4,6 @@ import CompanyLogo from "./CompanyLogo";
 
 const keyOf = (row) => String(row?.itemId ?? row?.ItemRef?.value ?? row?.name ?? "");
 
-// Helper: normalize to string key
-const skey = (v) => String(v ?? "");
-
 const fmtDate = (d) => {
     if (!d) return "—";
     // support ISO string or Mongo extended JSON { $date: "..." } 
@@ -19,136 +16,40 @@ const PackagePrint = forwardRef(function PackagePrint(
     ref
 ) {
     const { realmId } = useRealm(); // Index lines by a stable key so we can enrich rows with names/rates if present
-   
-    // const lineByKey = useMemo(() => {
-    //     const lines = pkg?.lines || [];
-    //     return Object.fromEntries(
-    //         lines.map((ln) => {
-    //             const k = keyOf(ln);
-    //             return [k, { ...ln, itemId: k }];
-    //         })
-    //     );
-    // }, [pkg?.lines]);
+    const lineByKey = useMemo(() => {
+        const lines = pkg?.lines || [];
+        return Object.fromEntries(
+            lines.map((ln) => {
+                const k = keyOf(ln);
+                return [k, { ...ln, itemId: k }];
+            })
+        );
+    }, [pkg?.lines]);
 
-    // // Build rows primarily from pkg.quantities (source of truth for this package)
+    // Build rows primarily from pkg.quantities (source of truth for this package)
 
-    // const rows = useMemo(() => {
-    //     const q = pkg?.quantities;
-    //     // Preferred path: quantities map → rows
-    //     if (q && typeof q === "object" && Object.keys(q).length) {
-    //         return Object.entries(q).map(([k, qty]) => {
-    //             const fromLine = lineByKey[k];
-    //             const name = fromLine?.name ?? k;
-    //             const rate = Number(fromLine?.rate || 0);
-    //             const quantity = Number(qty || 0);
-    //             return { itemId: k, name, quantity, rate, amount: quantity * rate };
-    //         });
-    //     }
-    //     // Fallback: legacy items prop (keeps old behavior if needed)
-    //     return (items || []).map((it) => ({
-    //         ...it,
-    //         itemId: keyOf(it),
-    //         name: it.name ?? keyOf(it),
-    //         quantity: Number(it.quantity || 0),
-    //         rate: Number(it.rate || 0),
-    //         amount: Number(it.quantity || 0) * Number(it.rate || 0)
-    //     }));
-    // }, [pkg?.quantities, items, lineByKey]);
-
-// Build lookups from every source we might have
-const lineByKey = useMemo(() => {
-  const lines = pkg?.lines || [];
-  const map = {};
-  for (const ln of lines) {
-    const k = skey(ln.itemId ?? ln?.ItemRef?.value ?? ln?.name);
-    if (!k) continue;
-    map[k] = { ...ln, itemId: k };
-  }
-  return map;
-}, [pkg?.lines]);
-
-const itemsById = useMemo(() => {
-  const map = {};
-  for (const it of items || []) {
-    const k = skey(it.itemId ?? it?.ItemRef?.value);
-    if (!k) continue;
-    map[k] = it;
-  }
-  return map;
-}, [items]);
-
-const itemsByName = useMemo(() => {
-  const map = {};
-  for (const it of items || []) {
-    if (it?.name) map[skey(it.name)] = it;
-  }
-  return map;
-}, [items]);
-
-const snapById = useMemo(() => {
-  const arr = pkg?.snapshot?.items || pkg?.snapshot?.estimateItems || [];
-  const map = {};
-  for (const it of arr) {
-    const k = skey(it.itemId ?? it?.ItemRef?.value);
-    if (!k) continue;
-    map[k] = it;
-  }
-  return map;
-}, [pkg?.snapshot?.items, pkg?.snapshot?.estimateItems]);
-
-function resolveName(key) {
-  const k = skey(key);
-  return (
-    lineByKey[k]?.name ??
-    itemsById[k]?.name ??
-    itemsByName[k]?.name ?? // if quantities used names as keys
-    snapById[k]?.name ??
-    k // final fallback (what you were seeing)
-  );
-}
-
-const rows = useMemo(() => {
-  // Support Map or plain object for quantities
-  let q = pkg?.quantities;
-  if (q && typeof q === "object" && typeof q.size === "number" && q.forEach) {
-    // it's a Map
-    q = Object.fromEntries(q);
-  }
-  if (q && typeof q === "object" && Object.keys(q).length) {
-    return Object.entries(q).map(([key, qty]) => {
-      const k = skey(key);
-      const src = lineByKey[k] || itemsById[k] || snapById[k] || itemsByName[k];
-      const name = resolveName(k);
-      const rate = Number(src?.rate || 0);
-      const quantity = Number(qty || 0);
-      return {
-        itemId: k,
-        name,
-        quantity,
-        rate,
-        amount: quantity * rate,
-        sku: src?.sku,
-        description: src?.description,
-      };
-    });
-  }
-  // Fallback to `items` prop
-  return (items || []).map((it) => {
-    const k = skey(it.itemId ?? it?.ItemRef?.value ?? it?.name);
-    const name = it?.name ?? resolveName(k);
-    const quantity = Number(it.quantity || 0);
-    const rate = Number(it.rate || 0);
-    return {
-      ...it,
-      itemId: k,
-      name,
-      quantity,
-      rate,
-      amount: quantity * rate,
-    };
-  });
-}, [pkg?.quantities, items, lineByKey, itemsById, itemsByName, snapById]);
-
+    const rows = useMemo(() => {
+        const q = pkg?.quantities;
+        // Preferred path: quantities map → rows
+        if (q && typeof q === "object" && Object.keys(q).length) {
+            return Object.entries(q).map(([k, qty]) => {
+                const fromLine = lineByKey[k];
+                const name = fromLine?.name ?? k;
+                const rate = Number(fromLine?.rate || 0);
+                const quantity = Number(qty || 0);
+                return { itemId: k, name, quantity, rate, amount: quantity * rate };
+            });
+        }
+        // Fallback: legacy items prop (keeps old behavior if needed)
+        return (items || []).map((it) => ({
+            ...it,
+            itemId: keyOf(it),
+            name: it.name ?? keyOf(it),
+            quantity: Number(it.quantity || 0),
+            rate: Number(it.rate || 0),
+            amount: Number(it.quantity || 0) * Number(it.rate || 0)
+        }));
+    }, [pkg?.quantities, items, lineByKey]);
 
     const subtotal = useMemo(() => rows.reduce((s, r) => s + (r.amount || 0), 0), [rows]);
     const tax = useMemo(() => subtotal * Number(taxRate || 0), [subtotal, taxRate]);
