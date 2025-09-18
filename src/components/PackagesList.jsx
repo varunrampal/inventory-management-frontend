@@ -1,6 +1,6 @@
 // src/components/PackagesList.jsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useReactToPrint } from "react-to-print";
 import PackagePrint from "./PackagePrint";
@@ -45,19 +45,19 @@ export default function PackagesList({ realmId, onEstimateUpdate }) {
   const companyDetails =
     realmId === "9341454894464212"
       ? {
-          name: "Peels Native Plants Ltd.",
-          address: "22064 64 Ave, Langley, BC V2Y 2H1",
-          phone: "(236) 591-8781",
-          email: "info@peelsnativeplants.com",
-          website: "www.peelsnativeplants.com",
-        }
+        name: "Peels Native Plants Ltd.",
+        address: "22064 64 Ave, Langley, BC V2Y 2H1",
+        phone: "(236) 591-8781",
+        email: "info@peelsnativeplants.com",
+        website: "www.peelsnativeplants.com",
+      }
       : {
-          name: "Green Flow Nurseries Ltd.",
-          address: "35444 Hartley Rd, Mission, BC V2V 0A8",
-          phone: "(604) 217-1351",
-          email: "info@greenflownurseries.com",
-          website: "www.greenflownurseries.com",
-        };
+        name: "Green Flow Nurseries Ltd.",
+        address: "35444 Hartley Rd, Mission, BC V2V 0A8",
+        phone: "(604) 217-1351",
+        email: "info@greenflownurseries.com",
+        website: "www.greenflownurseries.com",
+      };
 
   // UI bits
   const Spinner = () => (
@@ -342,9 +342,16 @@ export default function PackagesList({ realmId, onEstimateUpdate }) {
               rows.map((p) => (
                 <tr key={p._id} className="hover:bg-gray-50">
                   <td className="px-3 py-2">{p.packageCode || "—"}</td>
-                  <td className="px-3 py-2">{p.estimate.docNumber || "—"}</td>
+                  <td className="px-3 py-2">
+                    <Link
+                      to={`/estimate/details/${p.estimate.docNumber}`}
+                      className="text-blue-600 hover:underline ml-2"
+                    >
+                      {p.estimate.docNumber}
+                    </Link>
+                  </td>
                   {/* <td className="px-3 py-2">{formatDate(p.shipmentDate || p.packageDate)}</td> */}
-                    <td className="px-3 py-2">{p.shipmentDate.slice(0,10) || p.packageDate.slice(0,10)}</td>
+                  <td className="px-3 py-2">{p.shipmentDate.slice(0, 10) || p.packageDate.slice(0, 10)}</td>
                   <td className="px-3 py-2">{p.snapshot?.customerName || "—"}</td>
                   <td className="px-3 py-2">{p.driverName || "—"}</td>
                   <td className="px-3 py-2">
@@ -371,11 +378,10 @@ export default function PackagesList({ realmId, onEstimateUpdate }) {
                       <button
                         onClick={() => confirmDeletePackage(p._id)}
                         disabled={loading || deletingId === p._id}
-                        className={`rounded-md border px-2 py-1 text-xs ${
-                          deletingId === p._id
+                        className={`rounded-md border px-2 py-1 text-xs ${deletingId === p._id
                             ? "border-gray-200 text-gray-400 cursor-not-allowed"
                             : "border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
+                          }`}
                       >
                         {deletingId === p._id ? "Deleting…" : "Delete"}
                       </button>
