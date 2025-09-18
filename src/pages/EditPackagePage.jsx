@@ -198,6 +198,30 @@ export default function EditPackagePage() {
     );
   }
 
+  // Guard: if user types more than remaining, alert + clamp
+const makeQtyKeyUpGuard = (ordered, packed, itemId) => (e) => {
+  const raw = e.currentTarget.value;
+  if (raw === "") return; // let them clear it while editing
+  const val = Number(raw);
+  if (!Number.isFinite(val)) return;
+
+  const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
+
+  // ⚠️ If you literally want "greater than ordered OR packed", use:
+  // if (val > ordered || val > packed) { ... }
+  // ✅ Recommended: do not exceed remaining
+  if (val > remaining) {
+    alert(`Quantity cannot exceed remaining (${remaining}). Ordered: ${ordered}, Packed: ${packed}.`);
+    const clamped = remaining;
+    e.currentTarget.value = clamped;
+    // sync form state
+    setForm((prev) => ({
+      ...prev,
+      quantities: { ...prev.quantities, [String(itemId)]: clamped },
+    }));
+  }
+};
+
   return (
     <Layout>
       <div className="max-w-5xl mx-auto p-4">
@@ -278,6 +302,8 @@ export default function EditPackagePage() {
                   const ordered = Number(meta.quantity ?? 0);
                   const current = Number(meta.fulfilled ?? form.quantities[itemId] ?? 0);
                   const newVal = form.quantities[itemId] ?? Number(qty || 0);
+                  const packed  = Number(meta.fulfilled ?? 0);
+                  const remaining = Math.max(0, ordered - packed);
                   const err = errors[`q_${itemId}`];
 
                   return (
@@ -291,11 +317,13 @@ export default function EditPackagePage() {
                         <input
                           type="number"
                           min={0}
+                          max= {remaining}
                           step={1}
                           value={newVal}
                           name={`q_${itemId}`}
                           data-itemid={itemId}
                           onChange={(e) => updateQuantity(itemId, e.target.value)}
+                           onKeyUp={makeQtyKeyUpGuard(ordered, packed, itemId)} 
                           className={`w-24 border rounded px-2 py-1 ${
                             err ? "border-red-500" : ""
                           }`}

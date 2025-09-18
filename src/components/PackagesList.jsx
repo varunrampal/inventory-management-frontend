@@ -212,6 +212,7 @@ export default function PackagesList({ realmId, onEstimateUpdate }) {
       customerName: row.snapshot.customerName,
       driverName: row.driverName,
       quantities: row.quantities,
+      docNumber: row.estimate.docNumber,
     };
     const itemsForPrint = row.lines ?? [];
     setPrintData({ pkg: pkgForPrint, items: itemsForPrint });
@@ -232,7 +233,7 @@ export default function PackagesList({ realmId, onEstimateUpdate }) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="e.g., Geeta or 189"
+            placeholder="Customer Name or Estimate #"
             className="w-full rounded-lg border px-3 py-2 outline-none focus:ring focus:ring-blue-200 bg-white"
             disabled={loading}
           />
@@ -341,8 +342,9 @@ export default function PackagesList({ realmId, onEstimateUpdate }) {
               rows.map((p) => (
                 <tr key={p._id} className="hover:bg-gray-50">
                   <td className="px-3 py-2">{p.packageCode || "—"}</td>
-                  <td className="px-3 py-2">{p.estimateId || "—"}</td>
-                  <td className="px-3 py-2">{formatDate(p.shipmentDate || p.packageDate)}</td>
+                  <td className="px-3 py-2">{p.estimate.docNumber || "—"}</td>
+                  {/* <td className="px-3 py-2">{formatDate(p.shipmentDate || p.packageDate)}</td> */}
+                    <td className="px-3 py-2">{p.shipmentDate.slice(0,10) || p.packageDate.slice(0,10)}</td>
                   <td className="px-3 py-2">{p.snapshot?.customerName || "—"}</td>
                   <td className="px-3 py-2">{p.driverName || "—"}</td>
                   <td className="px-3 py-2">

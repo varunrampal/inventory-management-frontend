@@ -93,6 +93,24 @@ export default function CreatePackageForm({ estimateId, realmId }) {
     }
   };
 
+
+  const handleQtyKeyUp = (item, key) => (e) => {
+  const ordered = Number(item.quantity || 0);
+  const fulfilled = Number(item.fulfilled || 0);
+  const remaining = Math.max(0, ordered - fulfilled);
+  const val = Number(e.currentTarget.value);
+
+  if (!Number.isFinite(val)) return;
+
+  if (val > remaining || val > ordered) {
+    alert(`Selected quantity cannot exceed remaining (${remaining}). Ordered: ${ordered}.`);
+    const clamped = Math.min(remaining, ordered);
+    // clamp UI + state
+    e.currentTarget.value = clamped;
+    setQuantities((prev) => ({ ...prev, [key]: clamped }));
+  }
+};
+
   if (!estimate) return <p>Loading estimate...</p>;
 
   return (
@@ -173,9 +191,8 @@ export default function CreatePackageForm({ estimateId, realmId }) {
                       ))
 
                     }
-
+                    onKeyUp={handleQtyKeyUp(item, key)} 
                     // onChange={(e) => handleQtyChange(key, e.target.value)}
-
                     className={`w-20 border rounded px-2 py-1 text-right ${isDisabled ? 'bg-gray-200 text-gray-500' : ''}`}
                     disabled={isDisabled} // 🔹 Disable if no remaining qty
                   />

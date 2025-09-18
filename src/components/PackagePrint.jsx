@@ -19,7 +19,7 @@ const PackagePrint = forwardRef(function PackagePrint(
     ref
 ) {
     const { realmId } = useRealm(); // Index lines by a stable key so we can enrich rows with names/rates if present
-   
+
     // const lineByKey = useMemo(() => {
     //     const lines = pkg?.lines || [];
     //     return Object.fromEntries(
@@ -55,99 +55,99 @@ const PackagePrint = forwardRef(function PackagePrint(
     //     }));
     // }, [pkg?.quantities, items, lineByKey]);
 
-// Build lookups from every source we might have
-const lineByKey = useMemo(() => {
-  const lines = pkg?.lines || [];
-  const map = {};
-  for (const ln of lines) {
-    const k = skey(ln.itemId ?? ln?.ItemRef?.value ?? ln?.name);
-    if (!k) continue;
-    map[k] = { ...ln, itemId: k };
-  }
-  return map;
-}, [pkg?.lines]);
+    // Build lookups from every source we might have
+    const lineByKey = useMemo(() => {
+        const lines = pkg?.lines || [];
+        const map = {};
+        for (const ln of lines) {
+            const k = skey(ln.itemId ?? ln?.ItemRef?.value ?? ln?.name);
+            if (!k) continue;
+            map[k] = { ...ln, itemId: k };
+        }
+        return map;
+    }, [pkg?.lines]);
 
-const itemsById = useMemo(() => {
-  const map = {};
-  for (const it of items || []) {
-    const k = skey(it.itemId ?? it?.ItemRef?.value);
-    if (!k) continue;
-    map[k] = it;
-  }
-  return map;
-}, [items]);
+    const itemsById = useMemo(() => {
+        const map = {};
+        for (const it of items || []) {
+            const k = skey(it.itemId ?? it?.ItemRef?.value);
+            if (!k) continue;
+            map[k] = it;
+        }
+        return map;
+    }, [items]);
 
-const itemsByName = useMemo(() => {
-  const map = {};
-  for (const it of items || []) {
-    if (it?.name) map[skey(it.name)] = it;
-  }
-  return map;
-}, [items]);
+    const itemsByName = useMemo(() => {
+        const map = {};
+        for (const it of items || []) {
+            if (it?.name) map[skey(it.name)] = it;
+        }
+        return map;
+    }, [items]);
 
-const snapById = useMemo(() => {
-  const arr = pkg?.snapshot?.items || pkg?.snapshot?.estimateItems || [];
-  const map = {};
-  for (const it of arr) {
-    const k = skey(it.itemId ?? it?.ItemRef?.value);
-    if (!k) continue;
-    map[k] = it;
-  }
-  return map;
-}, [pkg?.snapshot?.items, pkg?.snapshot?.estimateItems]);
+    const snapById = useMemo(() => {
+        const arr = pkg?.snapshot?.items || pkg?.snapshot?.estimateItems || [];
+        const map = {};
+        for (const it of arr) {
+            const k = skey(it.itemId ?? it?.ItemRef?.value);
+            if (!k) continue;
+            map[k] = it;
+        }
+        return map;
+    }, [pkg?.snapshot?.items, pkg?.snapshot?.estimateItems]);
 
-function resolveName(key) {
-  const k = skey(key);
-  return (
-    lineByKey[k]?.name ??
-    itemsById[k]?.name ??
-    itemsByName[k]?.name ?? // if quantities used names as keys
-    snapById[k]?.name ??
-    k // final fallback (what you were seeing)
-  );
-}
+    function resolveName(key) {
+        const k = skey(key);
+        return (
+            lineByKey[k]?.name ??
+            itemsById[k]?.name ??
+            itemsByName[k]?.name ?? // if quantities used names as keys
+            snapById[k]?.name ??
+            k // final fallback (what you were seeing)
+        );
+    }
 
-const rows = useMemo(() => {
-  // Support Map or plain object for quantities
-  let q = pkg?.quantities;
-  if (q && typeof q === "object" && typeof q.size === "number" && q.forEach) {
-    // it's a Map
-    q = Object.fromEntries(q);
-  }
-  if (q && typeof q === "object" && Object.keys(q).length) {
-    return Object.entries(q).map(([key, qty]) => {
-      const k = skey(key);
-      const src = lineByKey[k] || itemsById[k] || snapById[k] || itemsByName[k];
-      const name = resolveName(k);
-      const rate = Number(src?.rate || 0);
-      const quantity = Number(qty || 0);
-      return {
-        itemId: k,
-        name,
-        quantity,
-        rate,
-        amount: quantity * rate,
-        sku: src?.sku,
-        description: src?.description,
-      };
-    });
-  }
-  // Fallback to `items` prop
-  return (items || []).map((it) => {
-    const k = skey(it.itemId ?? it?.ItemRef?.value ?? it?.name);
-    const name = it?.name ?? resolveName(k);
-    const quantity = Number(it.quantity || 0);
-    const rate = Number(it.rate || 0);
-    return {
-      ...it,
-      itemId: k,
-      name,
-      quantity,
-      rate,
-      amount: quantity * rate,
-    };
-  });
-}, [pkg?.quantities, items, lineByKey, itemsById, itemsByName, snapById]);
+    const rows = useMemo(() => {
+        // Support Map or plain object for quantities
+        let q = pkg?.quantities;
+        if (q && typeof q === "object" && typeof q.size === "number" && q.forEach) {
+            // it's a Map
+            q = Object.fromEntries(q);
+        }
+        if (q && typeof q === "object" && Object.keys(q).length) {
+            return Object.entries(q).map(([key, qty]) => {
+                const k = skey(key);
+                const src = lineByKey[k] || itemsById[k] || snapById[k] || itemsByName[k];
+                const name = resolveName(k);
+                const rate = Number(src?.rate || 0);
+                const quantity = Number(qty || 0);
+                return {
+                    itemId: k,
+                    name,
+                    quantity,
+                    rate,
+                    amount: quantity * rate,
+                    sku: src?.sku,
+                    description: src?.description,
+                };
+            });
+        }
+        // Fallback to `items` prop
+        return (items || []).map((it) => {
+            const k = skey(it.itemId ?? it?.ItemRef?.value ?? it?.name);
+            const name = it?.name ?? resolveName(k);
+            const quantity = Number(it.quantity || 0);
+            const rate = Number(it.rate || 0);
+            return {
+                ...it,
+                itemId: k,
+                name,
+                quantity,
+                rate,
+                amount: quantity * rate,
+            };
+        });
+    }, [pkg?.quantities, items, lineByKey, itemsById, itemsByName, snapById]);
 
 
     const subtotal = useMemo(() => rows.reduce((s, r) => s + (r.amount || 0), 0), [rows]);
@@ -228,24 +228,22 @@ const rows = useMemo(() => {
                             </tr>
                         </thead>
                         <tbody>
-                            {rows.map((r, idx) => (
-                                <tr key={r.itemId || `${r.name}-${idx}`} style={{ pageBreakInside: "avoid" }}>
-                                    <td className="border px-2 py-1 align-top">{idx + 1}</td>
-                                    <td className="border px-2 py-1">
-                                        <div className="font-medium">{r.name}</div>
-                                        {r.sku && <div className="text-xs text-gray-600">SKU: {r.sku}</div>}
-                                        {r.description && (
-                                            <div className="text-xs text-gray-600 whitespace-pre-wrap">
-                                                {r.description}
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td className="border px-2 py-1 text-right">{r.quantity}</td>
-                                    {/* <td className="border px-2 py-1 text-right">{fmtMoney(r.rate)}</td>
-                                    <td className="border px-2 py-1 text-right">{fmtMoney(r.amount)}</td>
-                                    */}
-                                </tr>
-                            ))}
+                            {(rows || [])
+                                .filter(r => Number(r?.quantity ?? 0) !== 0) // exclude only quantity === 0
+                                .map((r, idx) => (
+                                    <tr key={r.itemId || r.sku || `${r.name}-${idx}`} style={{ pageBreakInside: "avoid" }}>
+                                        <td className="border px-2 py-1 align-top">{idx + 1}</td>
+                                        <td className="border px-2 py-1">
+                                            <div className="font-medium">{r.name}</div>
+                                            {r.sku && <div className="text-xs text-gray-600">SKU: {r.sku}</div>}
+                                            {r.description && (
+                                                <div className="text-xs text-gray-600 whitespace-pre-wrap">{r.description}</div>
+                                            )}
+                                        </td>
+                                        <td className="border px-2 py-1 text-right">{r.quantity}</td>
+                                        {/* price cols… */}
+                                    </tr>
+                                ))}
                             {rows.length === 0 && (
                                 <tr>
                                     <td className="border px-2 py-4 text-center text-gray-600" colSpan={5}>
@@ -287,8 +285,8 @@ const rows = useMemo(() => {
 
                 </section>
 
-                {/* Notes (duplicate block kept for compatibility) */} 
-                {(pkg?.notes?.trim()?.length ?? 0) > 0 && ( <section className="mt-4"> <div className="mb-1 text-xs uppercase tracking-wider text-gray-600">Notes</div> <p className="whitespace-pre-wrap text-sm">{pkg.notes}</p> </section> )}
+                {/* Notes (duplicate block kept for compatibility) */}
+                {(pkg?.notes?.trim()?.length ?? 0) > 0 && (<section className="mt-4"> <div className="mb-1 text-xs uppercase tracking-wider text-gray-600">Notes</div> <p className="whitespace-pre-wrap text-sm">{pkg.notes}</p> </section>)}
 
                 {/* Footer */}
                 <footer className="mt-8 flex items-center justify-between text-xs text-gray-600">
