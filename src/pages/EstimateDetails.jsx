@@ -31,9 +31,7 @@ export default function EstimateDetails() {
             try {
                 setLoading(true);
                 setError('');
-
-
-              
+            
 
                 // if (!estimateId && !realmId) throw new Error('Estimate ID and Realm ID are required');
                  if (!DocNumber && !realmId) throw new Error('Document Number and Realm ID are required');

@@ -229,7 +229,11 @@ const PackagePrint = forwardRef(function PackagePrint(
                         </thead>
                         <tbody>
                             {(rows || [])
-                                .filter(r => Number(r?.quantity ?? 0) !== 0) // exclude only quantity === 0
+                                .filter(r => Number(r?.quantity ?? 0) !== 0)
+                                .filter(r => {
+                                    const n = String(r?.name ?? '').trim().toLowerCase();
+                                    return n && n !== 'unnamed'; // hide Unnamed or blank names
+                                }) // exclude only quantity === 0
                                 .map((r, idx) => (
                                     <tr key={r.itemId || r.sku || `${r.name}-${idx}`} style={{ pageBreakInside: "avoid" }}>
                                         <td className="border px-2 py-1 align-top">{idx + 1}</td>

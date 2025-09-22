@@ -89,42 +89,44 @@ export default function ItemsAccordion({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {items.map((item, idx) => (
-                    <tr key={idx} className="hover:bg-gray-50">
-                      <td className="p-2">{item.name}</td>
-                      <td className="p-2 text-right">{item.quantity}</td>
-                      {hasRate && (
-                        <td className="p-2 text-right">
-                          {typeof item.rate === "number" ? `$${item.rate.toFixed(2)}` : "—"}
-                        </td>
-                      )}
-                      {hasAmount && (
-                        <td className="p-2 text-right">
-                          {typeof item.amount === "number" ? `$${item.amount.toFixed(2)}` : "—"}
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-<tr className="bg-gray-50 font-semibold">
-  {/* empty first cell to align with Item Name column */}
-  <td className="p-2"></td>
+                  {items
+                    .filter(it => String(it?.name ?? '').trim().toLowerCase() !== 'unnamed')
+                    .map((item, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="p-2">{item.name}</td>
+                        <td className="p-2 text-right">{item.quantity}</td>
+                        {hasRate && (
+                          <td className="p-2 text-right">
+                            {typeof item.rate === "number" ? `$${item.rate.toFixed(2)}` : "—"}
+                          </td>
+                        )}
+                        {hasAmount && (
+                          <td className="p-2 text-right">
+                            {typeof item.amount === "number" ? `$${item.amount.toFixed(2)}` : "—"}
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  <tr className="bg-gray-50 font-semibold">
+                    {/* empty first cell to align with Item Name column */}
+                    <td className="p-2"></td>
 
-  {/* total quantity */}
-  <td className="p-2 text-right">
-    Qty: {totalQty}
-  </td>
+                    {/* total quantity */}
+                    <td className="p-2 text-right">
+                      Qty: {totalQty}
+                    </td>
 
-  {/* if you want rate column to stay aligned, leave it blank */}
-  {hasRate && <td className="p-2"></td>}
+                    {/* if you want rate column to stay aligned, leave it blank */}
+                    {hasRate && <td className="p-2"></td>}
 
-  {/* total amount right next to quantity */}
-  {hasAmount && (
-    <td className="p-2 text-right">
-      Total: {computedTotal !== null ? `$${computedTotal.toFixed(2)}` : "—"}
-    </td>
-  )}
-</tr>
-{/* 
+                    {/* total amount right next to quantity */}
+                    {hasAmount && (
+                      <td className="p-2 text-right">
+                        Total: {computedTotal !== null ? `$${computedTotal.toFixed(2)}` : "—"}
+                      </td>
+                    )}
+                  </tr>
+                  {/* 
                   {(hasAmount || hasRate || typeof totalAmount === "number") && (
                     <tr className="bg-gray-50 font-semibold">
                       <td className="p-2 text-right" colSpan={hasRate && hasAmount ? 3 : hasRate || hasAmount ? 2 : 1}>
