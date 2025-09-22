@@ -72,7 +72,7 @@ export default function CreatePackageForm({ estimateId, realmId }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ estimateId, realmId, quantities, notes: '', packageDate: pkgDate, shipmentDate: shipDate || undefined,  driverName}),
+        body: JSON.stringify({ estimateId, realmId, quantities, notes: '', packageDate: pkgDate, shipmentDate: shipDate || undefined, driverName }),
       });
 
       const data = await res.json();
@@ -95,21 +95,21 @@ export default function CreatePackageForm({ estimateId, realmId }) {
 
 
   const handleQtyKeyUp = (item, key) => (e) => {
-  const ordered = Number(item.quantity || 0);
-  const fulfilled = Number(item.fulfilled || 0);
-  const remaining = Math.max(0, ordered - fulfilled);
-  const val = Number(e.currentTarget.value);
+    const ordered = Number(item.quantity || 0);
+    const fulfilled = Number(item.fulfilled || 0);
+    const remaining = Math.max(0, ordered - fulfilled);
+    const val = Number(e.currentTarget.value);
 
-  if (!Number.isFinite(val)) return;
+    if (!Number.isFinite(val)) return;
 
-  if (val > remaining || val > ordered) {
-    alert(`Selected quantity cannot exceed remaining (${remaining}). Ordered: ${ordered}.`);
-    const clamped = Math.min(remaining, ordered);
-    // clamp UI + state
-    e.currentTarget.value = clamped;
-    setQuantities((prev) => ({ ...prev, [key]: clamped }));
-  }
-};
+    if (val > remaining || val > ordered) {
+      alert(`Selected quantity cannot exceed remaining (${remaining}). Ordered: ${ordered}.`);
+      const clamped = Math.min(remaining, ordered);
+      // clamp UI + state
+      e.currentTarget.value = clamped;
+      setQuantities((prev) => ({ ...prev, [key]: clamped }));
+    }
+  };
 
   if (!estimate) return <p>Loading estimate...</p>;
 
@@ -168,38 +168,43 @@ export default function CreatePackageForm({ estimateId, realmId }) {
           </tr>
         </thead>
         <tbody>
-          {estimate.items.map((item) => {
-            const fulfilled = item.fulfilled || 0;
-            const remaining = item.quantity - fulfilled;
-            const isDisabled = remaining <= 0
-            const key = item.itemId ? String(item.itemId) : String(item.name);
+          {(estimate.items || [])
+            .filter(it => {
+              const n = String(it?.name ?? '').trim().toLowerCase();
+              return n && n !== 'unnamed'; // hide Unnamed/blank
+            })
+            .map((item) => {
+              const fulfilled = item.fulfilled || 0;
+              const remaining = item.quantity - fulfilled;
+              const isDisabled = remaining <= 0
+              const key = item.itemId ? String(item.itemId) : String(item.name);
 
-            return (
-              <tr key={key}>
-                <td className="px-2 py-1 border">{item.name}</td>
-                <td className="px-2 py-1 border text-right">{item.quantity}</td>
-                <td className="px-2 py-1 border text-right">{fulfilled}</td>
-                <td className="px-2 py-1 border text-right">{remaining}</td>
-                <td className="px-2 py-1 border text-right">
-                  <input
-                    type="number"
-                    min="0"
-                    max={remaining}
-                    value={quantities[key] ?? 0}
-                    onChange={(e) =>
-                      setQuantities((prev) => ({ ...prev, [key]: Math.max(0, Number(e.target.value)) }
-                      ))
+              return (
+                <tr key={key}>
+                  <td className="px-2 py-1 border">{item.name}</td>
+                  <td className="px-2 py-1 border text-right">{item.quantity}</td>
+                  <td className="px-2 py-1 border text-right">{fulfilled}</td>
+                  <td className="px-2 py-1 border text-right">{remaining}</td>
+                  <td className="px-2 py-1 border text-right">
+                    <input
+                      type="number"
+                      min="0"
+                      max={remaining}
+                      value={quantities[key] ?? 0}
+                      onChange={(e) =>
+                        setQuantities((prev) => ({ ...prev, [key]: Math.max(0, Number(e.target.value)) }
+                        ))
 
-                    }
-                    onKeyUp={handleQtyKeyUp(item, key)} 
-                    // onChange={(e) => handleQtyChange(key, e.target.value)}
-                    className={`w-20 border rounded px-2 py-1 text-right ${isDisabled ? 'bg-gray-200 text-gray-500' : ''}`}
-                    disabled={isDisabled} // 🔹 Disable if no remaining qty
-                  />
-                </td>
-              </tr>
-            );
-          })}
+                      }
+                      onKeyUp={handleQtyKeyUp(item, key)}
+                      // onChange={(e) => handleQtyChange(key, e.target.value)}
+                      className={`w-20 border rounded px-2 py-1 text-right ${isDisabled ? 'bg-gray-200 text-gray-500' : ''}`}
+                      disabled={isDisabled} // 🔹 Disable if no remaining qty
+                    />
+                  </td>
+                </tr>
+              );
+            })}
         </tbody>
       </table>
 
