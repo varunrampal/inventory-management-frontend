@@ -1,5 +1,5 @@
 // src/pages/EditPackagePage.jsx
-import { useEffect, useMemo, useState, useCallback} from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Layout from '../components/Layout';
 
@@ -102,14 +102,35 @@ export default function EditPackagePage() {
 
   const [errors, setErrors] = useState({});
 
-  const updateQuantity = (itemId, value) => {
-    if (!itemId) return;
-    const v = value === "" ? "" : Math.max(0, Number(value));
-    setForm((prev) => ({
+  // const updateQuantity = (itemId, value) => {
+  //   if (!itemId) return;
+  //   const v = value === "" ? "" : Math.max(0, Number(value));
+  //   setForm((prev) => ({
+  //     ...prev,
+  //     quantities: { ...prev.quantities, [String(itemId)]: v },
+  //   }));
+  // };
+  const updateQuantity = (itemId, nextVal, { ordered, packed, savedInThisPackage = 0 } = {}) => {
+  const n = Math.max(0, Number(nextVal ?? 0));
+  const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
+  const maxAllowed = remaining + Number(savedInThisPackage || 0);
+  const clamped = Math.min(n, maxAllowed);
+
+  setForm(prev => ({
+    ...prev,
+    quantities: { ...prev.quantities, [String(itemId)]: clamped },
+  }));
+
+  if (n > maxAllowed) {
+    setErrors?.(prev => ({
       ...prev,
-      quantities: { ...prev.quantities, [String(itemId)]: v },
+      [`q_${itemId}`]: `Max allowed is ${maxAllowed} (includes ${savedInThisPackage} already in this package).`,
     }));
-  };
+  } else {
+    setErrors?.(prev => ({ ...prev, [`q_${itemId}`]: undefined }));
+  }
+};
+
 
   const keyOf = (row) =>
     String(row?.itemId ?? row?.ItemRef?.value ?? row?.name ?? "");
@@ -199,28 +220,65 @@ export default function EditPackagePage() {
   }
 
   // Guard: if user types more than remaining, alert + clamp
-const makeQtyKeyUpGuard = (ordered, packed, itemId) => (e) => {
+  // const makeQtyKeyUpGuard = (ordered, packed, itemId) => (e) => {
+  //   const raw = e.currentTarget.value;
+  //   if (raw === "") return; // let them clear it while editing
+  //   const val = Number(raw);
+  //   if (!Number.isFinite(val)) return;
+
+  //   const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
+
+  //   // ⚠️ If you literally want "greater than ordered OR packed", use:
+  //   // if (val > ordered || val > packed) { ... }
+  //   // ✅ Recommended: do not exceed remaining
+  //   if (val > remaining) {
+  //     alert(`Quantity cannot exceed remaining (${remaining}). Ordered: ${ordered}, Packed: ${packed}.`);
+  //     const clamped = remaining;
+  //     e.currentTarget.value = clamped;
+  //     // sync form state
+  //     setForm((prev) => ({
+  //       ...prev,
+  //       quantities: { ...prev.quantities, [String(itemId)]: clamped },
+  //     }));
+  //   }
+  // };
+
+// Guard: allow up to (remaining + savedInThisPackage)
+const makeQtyKeyUpGuard = (ordered, packed, itemId, savedInThisPackage = 0) => (e) => {
   const raw = e.currentTarget.value;
-  if (raw === "") return; // let them clear it while editing
-  const val = Number(raw);
+  if (raw === "") return; // allow clearing while typing
+
+  let val = Number(raw);
   if (!Number.isFinite(val)) return;
+  val = Math.max(0, val);
 
   const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
+  const saved = Number(savedInThisPackage || 0);
+  const maxAllowed = remaining + saved;
 
-  // ⚠️ If you literally want "greater than ordered OR packed", use:
-  // if (val > ordered || val > packed) { ... }
-  // ✅ Recommended: do not exceed remaining
-  if (val > remaining) {
-    alert(`Quantity cannot exceed remaining (${remaining}). Ordered: ${ordered}, Packed: ${packed}.`);
-    const clamped = remaining;
+  if (val > maxAllowed) {
+    const clamped = maxAllowed;
+    alert(
+      `Quantity cannot exceed available (${maxAllowed}). ` +
+      `Ordered: ${ordered}, Packed: ${packed}, Already in this package: ${saved}.`
+    );
     e.currentTarget.value = clamped;
-    // sync form state
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
       quantities: { ...prev.quantities, [String(itemId)]: clamped },
     }));
+    setErrors?.(prev => ({ ...prev, [`q_${itemId}`]: undefined }));
+    return;
   }
+
+  setForm(prev => ({
+    ...prev,
+    quantities: { ...prev.quantities, [String(itemId)]: val },
+  }));
+  setErrors?.(prev => ({ ...prev, [`q_${itemId}`]: undefined }));
 };
+
+
 
   return (
     <Layout>
@@ -244,7 +302,7 @@ const makeQtyKeyUpGuard = (ordered, packed, itemId) => (e) => {
                 </div>
                 <div className="text-right">
                   {/* Estimate# <span className="font-semibold">{pkg?.estimateId}</span> */}
-                   Estimate# <span className="font-semibold">{pkg?.docNumber}</span>
+                  Estimate# <span className="font-semibold">{pkg?.docNumber}</span>
                 </div>
               </div>
 
@@ -296,15 +354,24 @@ const makeQtyKeyUpGuard = (ordered, packed, itemId) => (e) => {
                   pkg?.quantities instanceof Map
                     ? Array.from(pkg.quantities.entries())
                     : Object.entries(pkg?.quantities || {})
+                      .filter(([itemId]) => {
+                        const meta = estById[itemId] || lineById[itemId] || {};
+                        const n = String(meta?.name ?? '').trim().toLowerCase();
+                        return n && n !== 'unnamed'; // hide Unnamed/blank
+                      })
                 ).map(([itemId, qty]) => {
                   const meta = estById[itemId] || lineById[itemId] || {};
                   const name = meta.name ?? itemId;
                   const ordered = Number(meta.quantity ?? 0);
                   const current = Number(meta.fulfilled ?? form.quantities[itemId] ?? 0);
                   const newVal = form.quantities[itemId] ?? Number(qty || 0);
-                  const packed  = Number(meta.fulfilled ?? 0);
-                  const remaining = Math.max(0, ordered - packed);
-                  const err = errors[`q_${itemId}`];
+                  const packed = Number(meta.fulfilled ?? 0);
+               
+                 const err = errors[`q_${itemId}`];
+                 const savedInThisPackage = Number(pkg?.quantities?.[itemId] || 0);
+                 const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
+                 const maxAllowed = remaining + savedInThisPackage;
+
 
                   return (
                     <tr key={itemId} className="border-b last:border-0">
@@ -314,20 +381,31 @@ const makeQtyKeyUpGuard = (ordered, packed, itemId) => (e) => {
                       <td className="py-2 pr-3">{ordered}</td>
                       <td className="py-2 pr-3">{current}</td>
                       <td className="py-2 pr-3">
-                        <input
-                          type="number"
-                          min={0}
-                          max= {remaining}
-                          step={1}
-                          value={newVal}
-                          name={`q_${itemId}`}
-                          data-itemid={itemId}
-                          onChange={(e) => updateQuantity(itemId, e.target.value)}
-                           onKeyUp={makeQtyKeyUpGuard(ordered, packed, itemId)} 
-                          className={`w-24 border rounded px-2 py-1 ${
-                            err ? "border-red-500" : ""
-                          }`}
-                        />
+                         <input
+        type="number"
+        min={0}
+        max={maxAllowed}                     // ✅ reflect true cap
+        step={1}
+        value={newVal}
+        name={`q_${itemId}`}
+        data-itemid={itemId}
+        onChange={(e) =>
+          updateQuantity(
+            itemId,
+            e.target.value,
+            { ordered, packed, savedInThisPackage } // ✅ context for clamp
+          )
+        }
+        onKeyUp={makeQtyKeyUpGuard(ordered, packed, itemId, savedInThisPackage)}
+        onBlur={(e) =>
+          updateQuantity(
+            itemId,
+            e.target.value,
+            { ordered, packed, savedInThisPackage } // extra safety on blur
+          )
+        }
+        className={`w-24 border rounded px-2 py-1 ${err ? "border-red-500" : ""}`}
+      />
                         {err && (
                           <div className="text-xs text-red-600 mt-1">{err}</div>
                         )}

@@ -84,8 +84,8 @@ export default function AssociatedEstimate({ estimateId }) {
             </thead>
             <tbody>
               <tr className="border-b">
-                <td className="px-2 py-1"><Link to={`/estimate/details/${estimate.estimateId}`} className="text-blue-500 hover:underline ml-2">
-                      {estimate.estimateId}
+                <td className="px-2 py-1"><Link to={`/estimate/details/${estimate.raw.DocNumber}`} className="text-blue-500 hover:underline ml-2">
+                      {estimate.raw.DocNumber}
                     </Link></td>
                 <td className="px-2 py-1">{estimate?.customerName || 'N/A'}</td>
                 <td className="px-2 py-1">

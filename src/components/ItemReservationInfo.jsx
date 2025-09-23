@@ -83,7 +83,7 @@ export default function ItemReservationInfo({ itemId, itemName,status = '', item
             <thead className="bg-gray-100">
               <tr>
                 <th className="py-2 px-3 border">#</th>
-                <th className="py-2 px-3 border">Estimate ID</th>
+                <th className="py-2 px-3 border">Estimate#</th>
                 <th className="py-2 px-3 border">Customer</th>
                 <th className="py-2 px-3 border">Quantity</th>
                 <th className="py-2 px-3 border">Txn Date</th>
@@ -93,7 +93,17 @@ export default function ItemReservationInfo({ itemId, itemName,status = '', item
               {data.details.map((est, idx) => (
                 <tr key={idx} className="border-t">
                   <td className="py-1 px-3">{(data.page - 1) * 5 + idx + 1}</td>
-                  <td className="py-1 px-3">{est.estimateId}</td>
+                  <td className="py-1 px-3">
+
+                      <Link
+                          to={`/estimate/details/${est.docNumber?? ''}`}
+                          className="text-blue-600 hover:underline ml-2"
+                        >
+                         {est.docNumber}
+                        </Link>
+
+
+                  </td>
                   <td className="py-1 px-3">{est.customerName}</td>
                   <td className="py-1 px-3">{est.quantity}</td>
                   <td className="py-1 px-3">{new Date(est.txnDate).toLocaleDateString()}</td>

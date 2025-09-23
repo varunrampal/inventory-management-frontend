@@ -115,7 +115,7 @@ export default function CreatePackageForm({ estimateId, realmId }) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white border rounded shadow p-4 space-y-4 w-full max-w-none">
-      <h2 className="text-lg font-semibold">Estimate #{estimate.estimateId}</h2>
+      <h2 className="text-lg font-semibold">Estimate #{estimate.raw.DocNumber}</h2>
       {message && <p className="text-sm text-blue-600">{message}</p>}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
