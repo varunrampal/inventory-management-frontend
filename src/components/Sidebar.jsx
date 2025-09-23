@@ -124,7 +124,13 @@ export default function Sidebar({ open, setOpen }) {
         <nav>
           <ul className="space-y-1">
             <NavItem to="/dashboard" label="Dashboard" />
-            <NavItem to="/inventory" label="Inventory" />
+            {/* <NavItem to="/inventory" label="Inventory" /> */}
+            {/* <NavItem to="/lowstockplants" label="Low Stock Plants" /> */}
+            <SubMenu label="Inventory" activeWhen={["/inventory","/lowstockplants/"]}>
+              <NavItem to="/inventory" label="Inventory"  activeWhen={["/inventory/"]}/>
+              <NavItem to="/lowstockplants" label="Low Stock Plants"  activeWhen={["/lowstockplants/"]}  />
+ 
+            </SubMenu>
             {/* Inventory group */}
             {/* <SubMenu label="Inventory" defaultOpen={false}>
               <NavItem to="/inventory" label="All Inventory" />

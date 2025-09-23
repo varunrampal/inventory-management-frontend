@@ -40,8 +40,8 @@ export default function LowStockItems() {
       <Layout>
       <div className="min-h-screen bg-gray-100 p-6">
             <header className="mb-6 flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Low Stock Plants</h1>
-                <button className="bg-red-500 text-white px-4 py-1 rounded">Logout</button>
+                <h1 className="text-2xl font-bold">Low Stock Items</h1>
+                {/* <button className="bg-red-500 text-white px-4 py-1 rounded">Logout</button> */}
             </header>
 
          {/*  {lowStockItems.length > 0 && (
