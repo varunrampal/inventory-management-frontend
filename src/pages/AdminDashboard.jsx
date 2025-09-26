@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import UpcomingWeekMini from "../components/UpcomingWeekMini";
+import UpcomingWeekPackages from "../components/UpcomingWeekPackages";
+import WeeklyPackagesWidget from '../components/WeeklyPackagesWidget';
 import Layout from '../components/Layout';
 import { useRealm } from '../context/RealmContext';
 
@@ -7,6 +10,42 @@ import { useRealm } from '../context/RealmContext';
   // ? 'https://inventory-management-server-vue1.onrender.com'
   // : 'http://localhost:4000';
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+function useUpcomingWeek(realmId) {
+  const [data, setData] = useState({ range: null, grouped: [] });
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    if (!realmId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setLoading(true);
+        setErr("");
+        const url = new URL(`${BASE_URL}/admin/packages/upcoming`);
+        url.searchParams.set("realmId", realmId);
+        const res = await fetch(url, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          },
+        });
+        if (!res.ok) throw new Error(await res.text());
+        const json = await res.json();
+        if (!cancelled) setData(json);
+      } catch (e) {
+        if (!cancelled) setErr(String(e.message || e));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => (cancelled = true);
+  }, [realmId]);
+
+  return { data, loading, err };
+}
+
 
 export default function AdminDashboard() {
   const [inventory, setInventory] = useState([]);
@@ -20,6 +59,7 @@ export default function AdminDashboard() {
   const itemsPerPage = 5;
   const navigate = useNavigate();
   const { realmId } = useRealm();
+   const { data, loading, err } = useUpcomingWeek(realmId);
 
 
   // useEffect(() => {
@@ -79,29 +119,35 @@ export default function AdminDashboard() {
   };
 
 
-  return (
+   return (
     <Layout>
-      <div className="flex h-screen">
-        {/* <aside className="w-64 bg-white shadow-md hidden md:block">
-        <div className="p-4 font-bold text-xl border-b">Admin Panel</div>
-        <nav className="p-4 space-y-2">
-          <a href="#" className="block text-blue-600">Dashboard</a>
-          <a href="/analytics" className="block">Analytics</a>
-           <a href="/lowstockitems" className="block">Low Stock Items</a>
-       
-        </nav>
-      </aside> */}
+      <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* If you also want the detailed card: */}
+        <section className="lg:col-span-2">
+          {/* <UpcomingWeekPackages realmId={realmId} /> */}
+          <WeeklyPackagesWidget realmId={realmId} className="mb-6" />
+        </section>
 
-        <main className="flex-1 bg-gray-100 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            {/* <button className="bg-red-500 text-white px-4 py-1 rounded"  onClick={handleLogout}>Logout</button> */}
+        {/* <aside className="lg:col-span-1 rounded-2xl border p-4">
+          <div className="mb-3">
+            <h3 className="text-lg font-semibold">Upcoming Deliveries/Pickups</h3>
+            {data.range && (
+              <div className="text-xs text-gray-500">
+                {data.range.from} → {data.range.to} (exclusive)
+              </div>
+            )}
           </div>
- <div>
-      <h2>Dashboard for Realm ID: {realmId}</h2>
-    </div>
-        </main>
-         
+
+          {loading ? (
+            <div className="text-sm text-gray-500">Loading…</div>
+          ) : err ? (
+            <div className="text-sm text-red-600">Error: {err}</div>
+          ) : (
+           <UpcomingWeekPackages realmId={realmId} /> 
+             
+          )}
+          
+        </aside> */}
       </div>
     </Layout>
   );

@@ -68,7 +68,7 @@ export default function EstimateDetails() {
     return (
 
         <Layout>
-            <h1 className="text-2xl font-semibold mb-4">Estimate Details</h1>
+            <h1 className="text-2xl font-semibold mb-4">Estimate# {estimate.raw.DocNumber} </h1>
 
             <div>
                 {/* {activeTab === 'Overview' && <div className="p-6 bg-white rounded shadow-md"> */}

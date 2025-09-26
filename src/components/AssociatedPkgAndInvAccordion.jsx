@@ -129,6 +129,8 @@ export default function AssociatedPkgAndInvAccordion({
       driverName: row.driverName,
       quantities: row.quantities,
       docNumber: estimate.raw.DocNumber,
+      siteContact: row.siteContact,
+      shippingAddress: row.shippingAddress,
     };
     console.log(pkgForPrint)
     const itemsForPrint = row.lines ?? [];
@@ -285,7 +287,7 @@ export default function AssociatedPkgAndInvAccordion({
                               onClick={() => navigate(`/package/edit/${pkg._id}`)}
                               className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-700 hover:bg-gray-50"
                             >
-                              Edit
+                              View/Edit
                             </button>
 
                             <button

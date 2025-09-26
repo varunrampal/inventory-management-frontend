@@ -1,10 +1,6 @@
 // src/pages/EditPackagePage.jsx
-import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useReactToPrint } from "react-to-print";
-import { useRealm } from '../context/RealmContext';
-import PackagePrint from "../components/PackagePrint";
-import formatQBOAddress from "../helpers/FormatAddress";
 import Layout from '../components/Layout';
 
 // const BASE_URL = import.meta.env.PROD
@@ -12,21 +8,6 @@ import Layout from '../components/Layout';
 //     : "http://localhost:4000";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-// NEW: stringify a structured ShipAddr into a printable multiline string
-const toAddressString = (addr = {}) => {
-  if (!addr) return "";
-  const {
-    Line1, Line2, Line3, Line4, Line5,
-    City, CountrySubDivisionCode, PostalCode, Country
-  } = addr || {};
-  const lines = [
-    Line1, Line2, Line3, Line4, Line5,
-    [City, CountrySubDivisionCode, PostalCode].filter(Boolean).join(", "),
-    Country
-  ].filter(Boolean);
-  return lines.join("\n");
-};
 
 export default function EditPackagePage() {
   const { id } = useParams(); // packageId from route /edit-package/:id
@@ -37,31 +18,6 @@ export default function EditPackagePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(""); // ✅ show "Saved" message
   const [pkg, setPkg] = useState(null);
-  const [printData, setPrintData] = useState({ pkg: null, items: [] });
-  const { realmId } = useRealm();
-  const [ShippingAddress, setShippingAddress] = useState("");
-  let shippingStr = "";
-
-  const contentRef = useRef(null);
-  const printNow = useReactToPrint({ contentRef, documentTitle: "Package" }); // ✅ call as printNow()
-
-  const companyDetails =
-    realmId === "9341454894464212"
-      ? {
-        name: "Peels Native Plants Ltd.",
-        address: "22064 64 Ave, Langley, BC V2Y 2H1",
-        phone: "(236) 591-8781",
-        email: "info@peelsnativeplants.com",
-        website: "www.peelsnativeplants.com",
-      }
-      : {
-        name: "Green Flow Nurseries Ltd.",
-        address: "35444 Hartley Rd, Mission, BC V2V 0A8",
-        phone: "(604) 217-1351",
-        email: "info@greenflownurseries.com",
-        website: "www.greenflownurseries.com",
-      };
-
 
   // Form state
   const [form, setForm] = useState({
@@ -69,10 +25,6 @@ export default function EditPackagePage() {
     driverName: "",
     notes: "",
     quantities: {},
-    // NEW: editable contact + address
-    siteContactName: "",
-    siteContactPhone: "",
-    shippingAddress: "",
   });
 
   // ✅ Make a reusable loader we can call on mount and after save
@@ -98,22 +50,11 @@ export default function EditPackagePage() {
           ? Object.fromEntries(data.quantities)
           : { ...(data?.quantities || {}) };
 
-      // NEW: choose best shipping string available
-       shippingStr =
-        data?.shippingAddress ||
-        data?.snapshot?.shipToString ||
-        toAddressString(data?.snapshot?.shipToOriginal || data?.snapshot?.shipTo || {});
-
-        setShippingAddress(shippingStr);
       setForm({
         shipmentDate: data.shipmentDate?.slice(0, 10) || "",
         driverName: data.driverName || "",
         notes: data.notes || "",
         quantities: normalizedQuantities,
-        // NEW: contact + address
-        siteContactName: data?.siteContact?.name || "",
-        siteContactPhone: data?.siteContact?.phone || "",
-        shippingAddress: shippingStr || "",
       });
     } catch (e) {
       setError(e.message || "Failed to load package.");
@@ -147,10 +88,6 @@ export default function EditPackagePage() {
   // Validation
   const validate = () => {
     const errs = {};
-    // Optional phone validation only if provided
-    if (form.siteContactPhone && !/^[0-9+()\-\s]{7,}$/.test(form.siteContactPhone)) {
-      errs.siteContactPhone = "Please enter a valid phone number.";
-    }
     (pkg?.items || []).forEach((it) => {
       const v = Number(form.quantities[it.itemId] ?? 0);
       if (!Number.isFinite(v) || v < 0) {
@@ -165,30 +102,35 @@ export default function EditPackagePage() {
 
   const [errors, setErrors] = useState({});
 
-  const updateQuantity = (
-    itemId,
-    nextVal,
-    { ordered, packed, savedInThisPackage = 0 } = {}
-  ) => {
-    const n = Math.max(0, Number(nextVal ?? 0));
-    const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
-    const maxAllowed = remaining + Number(savedInThisPackage || 0);
-    const clamped = Math.min(n, maxAllowed);
+  // const updateQuantity = (itemId, value) => {
+  //   if (!itemId) return;
+  //   const v = value === "" ? "" : Math.max(0, Number(value));
+  //   setForm((prev) => ({
+  //     ...prev,
+  //     quantities: { ...prev.quantities, [String(itemId)]: v },
+  //   }));
+  // };
+  const updateQuantity = (itemId, nextVal, { ordered, packed, savedInThisPackage = 0 } = {}) => {
+  const n = Math.max(0, Number(nextVal ?? 0));
+  const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
+  const maxAllowed = remaining + Number(savedInThisPackage || 0);
+  const clamped = Math.min(n, maxAllowed);
 
-    setForm((prev) => ({
+  setForm(prev => ({
+    ...prev,
+    quantities: { ...prev.quantities, [String(itemId)]: clamped },
+  }));
+
+  if (n > maxAllowed) {
+    setErrors?.(prev => ({
       ...prev,
-      quantities: { ...prev.quantities, [String(itemId)]: clamped },
+      [`q_${itemId}`]: `Max allowed is ${maxAllowed} (includes ${savedInThisPackage} already in this package).`,
     }));
+  } else {
+    setErrors?.(prev => ({ ...prev, [`q_${itemId}`]: undefined }));
+  }
+};
 
-    if (n > maxAllowed) {
-      setErrors?.((prev) => ({
-        ...prev,
-        [`q_${itemId}`]: `Max allowed is ${maxAllowed} (includes ${savedInThisPackage} already in this package).`,
-      }));
-    } else {
-      setErrors?.((prev) => ({ ...prev, [`q_${itemId}`]: undefined }));
-    }
-  };
 
   const keyOf = (row) =>
     String(row?.itemId ?? row?.ItemRef?.value ?? row?.name ?? "");
@@ -226,12 +168,6 @@ export default function EditPackagePage() {
         driverName: form.driverName || "",
         notes: form.notes || "",
         quantities: cleaned,
-        // NEW: persist contact + address
-        siteContact: {
-          name: form.siteContactName || "",
-          phone: form.siteContactPhone || "",
-        },
-        shippingAddress: form.shippingAddress || "",
       };
 
       const res = await fetch(`${BASE_URL}/admin/packages/${id}`, {
@@ -248,75 +184,23 @@ export default function EditPackagePage() {
         throw new Error(text || `Save failed: ${res.status}`);
       }
 
+      // If your API returns the updated package, you can do:
+      // const updated = await res.json();
+      // setPkg(updated);
+
+      // ✅ Soft refresh: re-fetch the latest from server
       await loadPackage();
       setSuccess("Saved changes.");
+      // If you prefer to leave this page and reload list/detail, do one of:
+      // navigate(`/package/${id}`);   // go to detail page
+      // navigate(0);                   // data router reload
+      // window.location.reload();      // hard reload (not recommended)
     } catch (e) {
       setError(e.message || "Failed to save package.");
     } finally {
       setSaving(false);
     }
   };
-
-  // Guard: allow up to (remaining + savedInThisPackage)
-  const makeQtyKeyUpGuard = (ordered, packed, itemId, savedInThisPackage = 0) => (e) => {
-    const raw = e.currentTarget.value;
-    if (raw === "") return; // allow clearing while typing
-
-    let val = Number(raw);
-    if (!Number.isFinite(val)) return;
-    val = Math.max(0, val);
-
-    const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
-    const saved = Number(savedInThisPackage || 0);
-    const maxAllowed = remaining + saved;
-
-    if (val > maxAllowed) {
-      const clamped = maxAllowed;
-      alert(
-        `Quantity cannot exceed available (${maxAllowed}). ` +
-        `Ordered: ${ordered}, Packed: ${packed}, Already in this package: ${saved}.`
-      );
-      e.currentTarget.value = clamped;
-      setForm(prev => ({
-        ...prev,
-        quantities: { ...prev.quantities, [String(itemId)]: clamped },
-      }));
-      setErrors?.(prev => ({ ...prev, [`q_${itemId}`]: undefined }));
-      return;
-    }
-
-    setForm(prev => ({
-      ...prev,
-      quantities: { ...prev.quantities, [String(itemId)]: val },
-    }));
-    setErrors?.(prev => ({ ...prev, [`q_${itemId}`]: undefined }));
-  };
-
-
-  const onPrintClick = () => {
-    const shipTo =
-      formatQBOAddress(shippingStr) ||
-      formatQBOAddress(pkg?.snapshot?.billTo);
-
-    const pkgForPrint = {
-      packageId: pkg?.packageCode,
-      estimateId: pkg?.estimateId,
-      shipTo,
-      shipmentDate: pkg?.shipmentDate || pkg?.packageDate,
-      notes: pkg?.notes,
-      customerName: pkg?.snapshot.customerName,
-      driverName: pkg?.driverName,
-      quantities: pkg?.quantities,
-      docNumber: pkg?.docNumber,
-      siteContact: pkg?.siteContact,
-      shippingAddress: form.shippingAddress,
-    };
-    const itemsForPrint = pkg?.quantities ?? [];
-    console.log("Printing package:", pkgForPrint, itemsForPrint);
-    setPrintData({ pkg: pkgForPrint, items: itemsForPrint });
-    setTimeout(() => printNow(), 0); // ✅ no args when using contentRef API
-  };
-
 
   if (loading) {
     return (
@@ -335,12 +219,73 @@ export default function EditPackagePage() {
     );
   }
 
+  // Guard: if user types more than remaining, alert + clamp
+  // const makeQtyKeyUpGuard = (ordered, packed, itemId) => (e) => {
+  //   const raw = e.currentTarget.value;
+  //   if (raw === "") return; // let them clear it while editing
+  //   const val = Number(raw);
+  //   if (!Number.isFinite(val)) return;
+
+  //   const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
+
+  //   // ⚠️ If you literally want "greater than ordered OR packed", use:
+  //   // if (val > ordered || val > packed) { ... }
+  //   // ✅ Recommended: do not exceed remaining
+  //   if (val > remaining) {
+  //     alert(`Quantity cannot exceed remaining (${remaining}). Ordered: ${ordered}, Packed: ${packed}.`);
+  //     const clamped = remaining;
+  //     e.currentTarget.value = clamped;
+  //     // sync form state
+  //     setForm((prev) => ({
+  //       ...prev,
+  //       quantities: { ...prev.quantities, [String(itemId)]: clamped },
+  //     }));
+  //   }
+  // };
+
+// Guard: allow up to (remaining + savedInThisPackage)
+const makeQtyKeyUpGuard = (ordered, packed, itemId, savedInThisPackage = 0) => (e) => {
+  const raw = e.currentTarget.value;
+  if (raw === "") return; // allow clearing while typing
+
+  let val = Number(raw);
+  if (!Number.isFinite(val)) return;
+  val = Math.max(0, val);
+
+  const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
+  const saved = Number(savedInThisPackage || 0);
+  const maxAllowed = remaining + saved;
+
+  if (val > maxAllowed) {
+    const clamped = maxAllowed;
+    alert(
+      `Quantity cannot exceed available (${maxAllowed}). ` +
+      `Ordered: ${ordered}, Packed: ${packed}, Already in this package: ${saved}.`
+    );
+    e.currentTarget.value = clamped;
+    setForm(prev => ({
+      ...prev,
+      quantities: { ...prev.quantities, [String(itemId)]: clamped },
+    }));
+    setErrors?.(prev => ({ ...prev, [`q_${itemId}`]: undefined }));
+    return;
+  }
+
+  setForm(prev => ({
+    ...prev,
+    quantities: { ...prev.quantities, [String(itemId)]: val },
+  }));
+  setErrors?.(prev => ({ ...prev, [`q_${itemId}`]: undefined }));
+};
+
+
+
   return (
     <Layout>
-      <div className="w-full max-w-none -mx-4 px-4">
+      <div className="max-w-5xl mx-auto p-4">
         {/* Header / Breadcrumb */}
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-semibold">Package</h1>
+          <h1 className="text-2xl font-semibold">Edit Package</h1>
           {!!success && (
             <div className="text-green-700 text-sm font-medium">{success}</div>
           )}
@@ -348,7 +293,7 @@ export default function EditPackagePage() {
 
         {/* Two-column layout */}
         <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Left meta */}
+          {/* Left */}
           <div className="rounded-lg border p-3 space-y-3">
             <div>
               <div className="flex items-center justify-between text-sm uppercase tracking-wider text-black">
@@ -356,6 +301,7 @@ export default function EditPackagePage() {
                   Package# <span className="font-semibold">{pkg?.packageCode}</span>
                 </div>
                 <div className="text-right">
+                  {/* Estimate# <span className="font-semibold">{pkg?.estimateId}</span> */}
                   Estimate# <span className="font-semibold">{pkg?.docNumber}</span>
                 </div>
               </div>
@@ -390,49 +336,6 @@ export default function EditPackagePage() {
                 placeholder="Driver"
               />
             </div>
-
-            {/* NEW: Site Contact */}
-            <div className="mt-4 border-t pt-3">
-              <div className="text-sm font-medium mb-2">Site Contact (optional)</div>
-              <label className="block text-xs text-gray-600 mb-1">Name</label>
-              <input
-                type="text"
-                value={form.siteContactName}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, siteContactName: e.target.value }))
-                }
-                className="w-full border rounded px-3 py-2 mb-2"
-                placeholder="Contact name"
-              />
-              <label className="block text-xs text-gray-600 mb-1">Phone</label>
-              <input
-                type="tel"
-                value={form.siteContactPhone}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, siteContactPhone: e.target.value }))
-                }
-                className="w-full border rounded px-3 py-2"
-                placeholder="e.g. 604-555-0123"
-              />
-              {errors.siteContactPhone && (
-                <div className="text-xs text-red-600 mt-1">{errors.siteContactPhone}</div>
-              )}
-            </div>
-
-            {/* NEW: Shipping Address */}
-            <div className="mt-4">
-              <div className="text-sm font-medium mb-2">Shipping Address</div>
-              <textarea
-                rows={6}
-                value={form.shippingAddress}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, shippingAddress: e.target.value }))
-                }
-                className="w-full border rounded px-3 py-2 font-mono"
-                placeholder={`Street\nSuite/Unit\nCity, Province, Postal Code\nCountry`}
-              />
-
-            </div>
           </div>
 
           {/* Right — Items table with editable quantities */}
@@ -463,14 +366,12 @@ export default function EditPackagePage() {
                   const current = Number(meta.fulfilled ?? form.quantities[itemId] ?? 0);
                   const newVal = form.quantities[itemId] ?? Number(qty || 0);
                   const packed = Number(meta.fulfilled ?? 0);
+               
+                 const err = errors[`q_${itemId}`];
+                 const savedInThisPackage = Number(pkg?.quantities?.[itemId] || 0);
+                 const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
+                 const maxAllowed = remaining + savedInThisPackage;
 
-                  const err = errors[`q_${itemId}`];
-
-                  // NEW: derive savedInThisPackage from the iterator's qty (works for Map or object)
-                  const savedInThisPackage = Number(qty || 0);
-
-                  const remaining = Math.max(0, Number(ordered || 0) - Number(packed || 0));
-                  const maxAllowed = remaining + savedInThisPackage;
 
                   return (
                     <tr key={itemId} className="border-b last:border-0">
@@ -480,31 +381,31 @@ export default function EditPackagePage() {
                       <td className="py-2 pr-3">{ordered}</td>
                       <td className="py-2 pr-3">{current}</td>
                       <td className="py-2 pr-3">
-                        <input
-                          type="number"
-                          min={0}
-                          max={maxAllowed}                     // ✅ reflect true cap
-                          step={1}
-                          value={newVal}
-                          name={`q_${itemId}`}
-                          data-itemid={itemId}
-                          onChange={(e) =>
-                            updateQuantity(
-                              itemId,
-                              e.target.value,
-                              { ordered, packed, savedInThisPackage } // ✅ context for clamp
-                            )
-                          }
-                          onKeyUp={makeQtyKeyUpGuard(ordered, packed, itemId, savedInThisPackage)}
-                          onBlur={(e) =>
-                            updateQuantity(
-                              itemId,
-                              e.target.value,
-                              { ordered, packed, savedInThisPackage } // extra safety on blur
-                            )
-                          }
-                          className={`w-24 border rounded px-2 py-1 ${err ? "border-red-500" : ""}`}
-                        />
+                         <input
+        type="number"
+        min={0}
+        max={maxAllowed}                     // ✅ reflect true cap
+        step={1}
+        value={newVal}
+        name={`q_${itemId}`}
+        data-itemid={itemId}
+        onChange={(e) =>
+          updateQuantity(
+            itemId,
+            e.target.value,
+            { ordered, packed, savedInThisPackage } // ✅ context for clamp
+          )
+        }
+        onKeyUp={makeQtyKeyUpGuard(ordered, packed, itemId, savedInThisPackage)}
+        onBlur={(e) =>
+          updateQuantity(
+            itemId,
+            e.target.value,
+            { ordered, packed, savedInThisPackage } // extra safety on blur
+          )
+        }
+        className={`w-24 border rounded px-2 py-1 ${err ? "border-red-500" : ""}`}
+      />
                         {err && (
                           <div className="text-xs text-red-600 mt-1">{err}</div>
                         )}
@@ -528,35 +429,14 @@ export default function EditPackagePage() {
               {saving ? "Saving..." : "Save Changes"}
             </button>
             <button
-             type="button"
-              onClick={() => onPrintClick()}
-              className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-
-            >
-              Print
-            </button>
-            <button
               type="button"
               onClick={() => navigate(-1)}
               className="rounded-md bg-gray-300 px-4 py-2 text-black hover:bg-gray-200"
             >
               Cancel
             </button>
-
           </div>
         </form>
-                {/* Hidden print container */}
-                <div style={{ position: "absolute", left: "-99999px", top: 0 }}>
-                  {printData.pkg && (
-                    <PackagePrint
-                      ref={contentRef}
-                      company={companyDetails}
-                      pkg={printData.pkg}
-                      items={printData.items}
-                      taxRate={0.05}
-                    />
-                  )}
-                </div>
       </div>
     </Layout>
   );

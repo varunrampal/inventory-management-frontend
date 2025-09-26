@@ -213,6 +213,8 @@ export default function PackagesList({ realmId, onEstimateUpdate }) {
       driverName: row.driverName,
       quantities: row.quantities,
       docNumber: row.estimate.docNumber,
+       siteContact: row.siteContact,
+      shippingAddress: row.shippingAddress,
     };
     const itemsForPrint = row.lines ?? [];
     setPrintData({ pkg: pkgForPrint, items: itemsForPrint });

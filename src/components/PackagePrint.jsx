@@ -19,7 +19,10 @@ const PackagePrint = forwardRef(function PackagePrint(
     ref
 ) {
     const { realmId } = useRealm(); // Index lines by a stable key so we can enrich rows with names/rates if present
-
+  const safeItems = useMemo(
+  () => (Array.isArray(items) ? items : []),
+  [items]
+);
     // const lineByKey = useMemo(() => {
     //     const lines = pkg?.lines || [];
     //     return Object.fromEntries(
@@ -67,45 +70,78 @@ const PackagePrint = forwardRef(function PackagePrint(
         return map;
     }, [pkg?.lines]);
 
-    const itemsById = useMemo(() => {
-        const map = {};
-        for (const it of items || []) {
-            const k = skey(it.itemId ?? it?.ItemRef?.value);
-            if (!k) continue;
-            map[k] = it;
-        }
-        return map;
-    }, [items]);
+    // const itemsById = useMemo(() => {
+    //     const map = {};
+    //     for (const it of items || []) {
+    //         const k = skey(it.itemId ?? it?.ItemRef?.value);
+    //         if (!k) continue;
+    //         map[k] = it;
+    //     }
+    //     return map;
+    // }, [items]);
 
-    const itemsByName = useMemo(() => {
-        const map = {};
-        for (const it of items || []) {
-            if (it?.name) map[skey(it.name)] = it;
-        }
-        return map;
-    }, [items]);
+    // const itemsByName = useMemo(() => {
+    //     const map = {};
+    //     for (const it of items || []) {
+    //         if (it?.name) map[skey(it.name)] = it;
+    //     }
+    //     return map;
+    // }, [items]);
+
+    const itemsById = useMemo(() => {
+  const map = {};
+  for (const it of safeItems) {
+    const k = skey(it.itemId ?? it?.ItemRef?.value);
+    if (!k) continue;
+    map[k] = it;
+  }
+  return map;
+}, [safeItems]);
+
+const itemsByName = useMemo(() => {
+  const map = {};
+  for (const it of safeItems) {
+    if (it?.name) map[skey(it.name)] = it;
+  }
+  return map;
+}, [safeItems]);
+
+    // const snapById = useMemo(() => {
+    //     const arr = pkg?.snapshot?.items || pkg?.snapshot?.estimateItems || [];
+    //     const map = {};
+    //     for (const it of arr) {
+    //         const k = skey(it.itemId ?? it?.ItemRef?.value);
+    //         if (!k) continue;
+    //         map[k] = it;
+    //     }
+    //     return map;
+    // }, [pkg?.snapshot?.items, pkg?.snapshot?.estimateItems]);
 
     const snapById = useMemo(() => {
-        const arr = pkg?.snapshot?.items || pkg?.snapshot?.estimateItems || [];
-        const map = {};
-        for (const it of arr) {
-            const k = skey(it.itemId ?? it?.ItemRef?.value);
-            if (!k) continue;
-            map[k] = it;
-        }
-        return map;
-    }, [pkg?.snapshot?.items, pkg?.snapshot?.estimateItems]);
+  const arr =
+    (Array.isArray(pkg?.snapshot?.items) ? pkg?.snapshot?.items : null) ??
+    (Array.isArray(pkg?.snapshot?.estimateItems) ? pkg?.snapshot?.estimateItems : []) ;
+  const map = {};
+  for (const it of arr) {
+    const k = skey(it.itemId ?? it?.ItemRef?.value);
+    if (!k) continue;
+    map[k] = it;
+  }
+  return map;
+}, [pkg?.snapshot?.items, pkg?.snapshot?.estimateItems]);
 
-    function resolveName(key) {
-        const k = skey(key);
-        return (
-            lineByKey[k]?.name ??
-            itemsById[k]?.name ??
-            itemsByName[k]?.name ?? // if quantities used names as keys
-            snapById[k]?.name ??
-            k // final fallback (what you were seeing)
-        );
-    }
+function resolveName(key) {
+  const k = skey(key);
+  return (
+    lineByKey[k]?.name ||
+    itemsById[k]?.name ||
+    itemsByName[k]?.name ||
+    snapById[k]?.name ||
+    // fallback: if the key itself looks like a name (e.g. "Alnus Rubra - #1"), use it
+    (/[\p{L}]/u.test(k) ? k : null) ||
+    "Unnamed"
+  );
+}
 
     const rows = useMemo(() => {
         // Support Map or plain object for quantities
@@ -114,40 +150,87 @@ const PackagePrint = forwardRef(function PackagePrint(
             // it's a Map
             q = Object.fromEntries(q);
         }
-        if (q && typeof q === "object" && Object.keys(q).length) {
-            return Object.entries(q).map(([key, qty]) => {
-                const k = skey(key);
-                const src = lineByKey[k] || itemsById[k] || snapById[k] || itemsByName[k];
-                const name = resolveName(k);
-                const rate = Number(src?.rate || 0);
-                const quantity = Number(qty || 0);
-                return {
-                    itemId: k,
-                    name,
-                    quantity,
-                    rate,
-                    amount: quantity * rate,
-                    sku: src?.sku,
-                    description: src?.description,
-                };
-            });
-        }
+        // if (q && typeof q === "object" && Object.keys(q).length) {
+        //     return Object.entries(q).map(([key, qty]) => {
+        //         const k = skey(key);
+        //         const src = lineByKey[k] || itemsById[k] || snapById[k] || itemsByName[k];
+        //         const name = resolveName(k);
+        //         const rate = Number(src?.rate || 0);
+        //         const quantity = Number(qty || 0);
+        //         return {
+        //             itemId: k,
+        //             name,
+        //             quantity,
+        //             rate,
+        //             amount: quantity * rate,
+        //             sku: src?.sku,
+        //             description: src?.description,
+        //         };
+        //     });
+        // }
+if (q && typeof q === "object" && Object.keys(q).length) {
+  return Object.entries(q)
+    .filter(([key]) => String(key) !== "SHIPPING_ITEM_ID")
+    .map(([key, qty]) => {
+      const k = skey(key);
+      const src = lineByKey[k] || itemsById[k] || snapById[k] || itemsByName[k];
+      const name = resolveName(k); // ✅ ensures name is used here
+      const rate = Number(src?.rate || 0);
+      const quantity = Number(qty || 0);
+
+      return {
+        itemId: k,
+        name, // ✅ now always a readable name
+        quantity,
+        rate,
+        amount: quantity * rate,
+        sku: src?.sku,
+        description: src?.description,
+      };
+    });
+}
+
+
         // Fallback to `items` prop
-        return (items || []).map((it) => {
-            const k = skey(it.itemId ?? it?.ItemRef?.value ?? it?.name);
-            const name = it?.name ?? resolveName(k);
-            const quantity = Number(it.quantity || 0);
-            const rate = Number(it.rate || 0);
-            return {
-                ...it,
-                itemId: k,
-                name,
-                quantity,
-                rate,
-                amount: quantity * rate,
-            };
-        });
+        // return (items || []).map((it) => {
+        //     const k = skey(it.itemId ?? it?.ItemRef?.value ?? it?.name);
+        //     const name = it?.name ?? resolveName(k);
+        //     const quantity = Number(it.quantity || 0);
+        //     const rate = Number(it.rate || 0);
+        //     return {
+        //         ...it,
+        //         itemId: k,
+        //         name,
+        //         quantity,
+        //         rate,
+        //         amount: quantity * rate,
+        //     };
+        // });
+
+        return safeItems.map((it) => {
+  const k = skey(it.itemId ?? it?.ItemRef?.value ?? it?.name);
+  const name = it?.name ?? resolveName(k);
+  const quantity = Number(it.quantity ?? it.qty ?? 0); // <- tolerate qty or quantity
+  const rate = Number(it.rate || 0);
+  return { ...it, itemId: k, name, quantity, rate, amount: quantity * rate };
+});
     }, [pkg?.quantities, items, lineByKey, itemsById, itemsByName, snapById]);
+
+
+// NEW: helper to stringify QBO-style ShipAddr object
+  const toAddressString = (addr = {}) => {
+    if (!addr) return "";
+    const {
+      Line1, Line2, Line3, Line4, Line5,
+      City, CountrySubDivisionCode, PostalCode, Country
+    } = addr || {};
+    const lines = [
+      Line1, Line2, Line3, Line4, Line5,
+      [City, CountrySubDivisionCode, PostalCode].filter(Boolean).join(", "),
+      Country
+    ].filter(Boolean);
+    return lines.join("\n");
+  };
 
 
     const subtotal = useMemo(() => rows.reduce((s, r) => s + (r.amount || 0), 0), [rows]);
@@ -155,6 +238,19 @@ const PackagePrint = forwardRef(function PackagePrint(
     const total = useMemo(() => subtotal + tax, [subtotal, tax]);
     const totalQty = useMemo(() => rows.reduce((s, r) => s + (Number(r.quantity) || 0), 0), [rows]);
     console.log('rows:', rows);
+
+// NEW: compute shipping address string (prefer edited value)
+  const shipToString =
+    (pkg?.shippingAddress || "").trim() ||
+    (pkg?.snapshot?.shipToString || "").trim() ||
+    toAddressString(pkg?.snapshot?.shipToOriginal || pkg?.snapshot?.shipTo || pkg?.shipTo || {});
+
+  // NEW: compute site contact display text
+  const siteContactText = [pkg?.siteContact?.name, pkg?.siteContact?.phone]
+    .filter(Boolean)
+    .join(" · ") || "—";
+
+
     const fmtMoney = (n) => new Intl.NumberFormat("en-CA", {
         style: "currency",
         currency,
@@ -208,7 +304,8 @@ const PackagePrint = forwardRef(function PackagePrint(
                         {pkg?.driverName && <Field label="Driver">{pkg.driverName}</Field>}
                         {pkg?.customerEmail && <Field label="Email">{pkg.customerEmail}</Field>}
                         <Field label="Total Qty">{totalQty || "—"}</Field>
-                        <Field label="Ship To"> <span className="whitespace-pre-wrap">{pkg?.shipTo || "—"}</span> </Field>
+                         <Field label="Site Contact">{siteContactText}</Field>
+                        <Field label="Ship To"> <span className="whitespace-pre-wrap">{shipToString || "—"}</span> </Field>
                         {pkg?.notes && (<Field className="sm:col-span-2 lg:col-span-3" label="Notes">
                             <span className="whitespace-pre-wrap">{pkg.notes}</span> </Field>)} </div>
                 </section>

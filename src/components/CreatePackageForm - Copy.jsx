@@ -14,8 +14,8 @@ export default function CreatePackageForm({ estimateId, realmId }) {
   const [custName, setCustName] = useState(''); // NEW
 
   //Site contact + editable shipping address
-  const [siteContact, setSiteContact] = useState({ name: "", phone: "" });
-  const [shippingAddress, setShippingAddress] = useState("");
+  const [siteContact, setSiteContact] = useState({ name: "", phone: "", email: "" }); // NEW
+  const [shippingAddress, setShippingAddress] = useState(""); // NEW
 
   const navigate = useNavigate();
 
@@ -85,13 +85,13 @@ export default function CreatePackageForm({ estimateId, realmId }) {
     console.log('Submitting package with details:', { shipDate, driverName });
     // Validate required fields
     const nextErrors = {};
-
     if (!shipDate) nextErrors.shipmentDate = "Shipment date is required.";
     if (!driverName) nextErrors.driverName = "Driver name is required.";
 
-    // UPDATED: name is optional; phone validated only if provided
-    if (siteContact.phone && !/^[0-9+()\-\s]{7,}$/.test(siteContact.phone)) {
-      nextErrors.siteContactPhone = "Please enter a valid phone number.";
+  // NEW: basic validation for site contact
+    if (!siteContact.name?.trim()) nextErrors.siteContactName = "Site contact name is required."; // NEW
+    if (siteContact.phone && !/^[0-9+()\-\s]{7,}$/.test(siteContact.phone)) { // simple sanity check // NEW
+      nextErrors.siteContactPhone = "Please enter a valid phone number."; // NEW
     }
 
     // NEW: ensure there’s at least one nonzero quantity
@@ -223,7 +223,7 @@ export default function CreatePackageForm({ estimateId, realmId }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* NEW */}
         <div className="border rounded p-3"> {/* NEW */}
           <div className="text-sm font-medium mb-2">Site Contact</div>
-<label className="block text-xs text-gray-600 mb-1">Name (optional)</label>
+          <label className="block text-xs text-gray-600 mb-1">Name <span className="text-red-600">*</span></label>
           <input
             type="text"
             value={siteContact.name}
@@ -231,17 +231,28 @@ export default function CreatePackageForm({ estimateId, realmId }) {
             className="w-full border rounded px-2 py-1 mb-2"
             placeholder="Contact name"
           />
-          <label className="block text-xs text-gray-600 mb-1">Phone (optional)</label>
+          {errors.siteContactName && (
+            <p className="mt-1 text-xs text-red-600">{errors.siteContactName}</p>
+          )}
+          <label className="block text-xs text-gray-600 mb-1">Phone</label>
           <input
             type="tel"
             value={siteContact.phone}
             onChange={(e) => setSiteContact({ ...siteContact, phone: e.target.value })}
-            className="w-full border rounded px-2 py-1"
+            className="w-full border rounded px-2 py-1 mb-2"
             placeholder="e.g. 604-555-0123"
           />
           {errors.siteContactPhone && (
             <p className="mt-1 text-xs text-red-600">{errors.siteContactPhone}</p>
           )}
+          <label className="block text-xs text-gray-600 mb-1">Email</label>
+          <input
+            type="email"
+            value={siteContact.email}
+            onChange={(e) => setSiteContact({ ...siteContact, email: e.target.value })}
+            className="w-full border rounded px-2 py-1"
+            placeholder="name@example.com"
+          />
         </div>
 
         <div className="border rounded p-3"> {/* NEW */}
