@@ -24,6 +24,7 @@ import PackagesPage from './pages/PackagesPage';
 import Eula from './pages/Eula';
 import Privacy from './pages/Privacy';
 import QuickBooksConnected from './pages/QuickBooksConnected';
+import ShippingSchedulePage from './pages/ShippingSchedulePage';
 
 
 // function ProtectedRoute({ children }) {
@@ -147,6 +148,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           </ProtectedRoute>
         }
       />
+        <Route path="/shippingschedule" element={
+        <ProtectedRoute>
+          <ShippingSchedulePage />
+        </ProtectedRoute>
+      } />
       <Route
           path="/eula"
           element={

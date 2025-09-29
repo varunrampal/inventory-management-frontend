@@ -145,6 +145,7 @@ export default function Sidebar({ open, setOpen }) {
               <NavItem to="/packages" label="Packages"  activeWhen={["/package/"]}  />
  
             </SubMenu>
+            <NavItem to="/shippingschedule" label="Schedule"  activeWhen={["/shippingschedule/"]} />
 
             {/* QuickBooks / Sync group */}
             <SubMenu label="QuickBooks" activeWhen={["/conncet-qb"]}>

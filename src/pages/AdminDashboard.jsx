@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import UpcomingWeekMini from "../components/UpcomingWeekMini";
-import UpcomingWeekPackages from "../components/UpcomingWeekPackages";
+import LowStockWidget from '../components/LowStockWidget';
 import WeeklyPackagesWidget from '../components/WeeklyPackagesWidget';
 import Layout from '../components/Layout';
 import { useRealm } from '../context/RealmContext';
@@ -125,6 +124,7 @@ export default function AdminDashboard() {
         {/* If you also want the detailed card: */}
         <section className="lg:col-span-2">
           {/* <UpcomingWeekPackages realmId={realmId} /> */}
+          
           <WeeklyPackagesWidget realmId={realmId} className="mb-6" />
         </section>
 
@@ -148,6 +148,8 @@ export default function AdminDashboard() {
           )}
           
         </aside> */}
+       {/* <LowStockWidget realmId="demo" demo /> */}
+      <LowStockWidget realmId={realmId} groupBy="band" threshold={10} />
       </div>
     </Layout>
   );

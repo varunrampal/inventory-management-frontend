@@ -1,5 +1,6 @@
 // src/components/dashboard/WeeklyPackagesWidget.jsx
 import { useEffect, useMemo, useState } from "react";
+import { useParams, Link, useNavigate } from 'react-router-dom';
 
 const TZ = "America/Vancouver";
 const DEFAULT_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -117,48 +118,53 @@ export default function WeeklyPackagesWidget({
 
   return (
     <div className={`w-full ${className}`}>
-          <section className="rounded-2xl border p-4">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold">Deliveries/Pickups — This Week & Next Week</h2>
+  <section className="rounded-2xl border p-4">
+    {/* Header row */}
+    <div className="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+      <div>
+        <h2 className="text-lg font-semibold">DELIVERIES/PICKUPS — This Week & Next Week</h2>
         {data?.current?.range && data?.next?.range && (
           <div className="text-xs text-gray-500">
-            This week: {data.current.range.from} → {data.current.range.to} · Next week:{" "}
-            {data.next.range.from} → {data.next.range.to}
+            This week: {data.current.range.from} → {data.current.range.to} · Next week: {data.next.range.from} → {data.next.range.to}
           </div>
         )}
       </div>
 
-      {loading ? (
-        <div className="rounded-2xl border p-4 text-sm text-gray-500">Loading…</div>
-      ) : err ? (
-        <div className="rounded-2xl border p-4 text-sm text-red-600">Error: {err}</div>
-      ) : (
-        <div
-          className={
-            layout === "stack"
-              ? "grid grid-cols-1 gap-4"
-              : "grid grid-cols-1 lg:grid-cols-2 gap-4"
-          }
-        >
-          <section className="rounded-2xl border p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-base font-semibold">This Week</h3>
-              <span className="text-xs text-gray-500">{data.current?.total ?? 0} total</span>
-            </div>
-            <PackagesByDay block={data.current} />
-          </section>
-
-          <section className="rounded-2xl border p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-base font-semibold">Next Week</h3>
-              <span className="text-xs text-gray-500">{data.next?.total ?? 0} total</span>
-            </div>
-            <PackagesByDay block={data.next} />
-          </section>
-        </div>
-      )}
-       </section>
+      {/* Link on the right */}
+      <Link
+        to="/shippingschedule"
+        className="self-start xs:self-auto  text-xs text-blue-500 hover:underline"
+      >
+        View full schedule
+      </Link>
     </div>
+
+    {loading ? (
+      <div className="rounded-2xl border p-4 text-sm text-gray-500">Loading…</div>
+    ) : err ? (
+      <div className="rounded-2xl border p-4 text-sm text-red-600">Error: {err}</div>
+    ) : (
+      <div className={layout === "stack" ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 lg:grid-cols-2 gap-4"}>
+        <section className="rounded-2xl border p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-base font-semibold">This Week</h3>
+            <span className="text-xs text-gray-500">{data.current?.total ?? 0} total</span>
+          </div>
+          <PackagesByDay block={data.current} />
+        </section>
+
+        <section className="rounded-2xl border p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h3 className="text-base font-semibold">Next Week</h3>
+            <span className="text-xs text-gray-500">{data.next?.total ?? 0} total</span>
+          </div>
+          <PackagesByDay block={data.next} />
+        </section>
+      </div>
+    )}
+  </section>
+</div>
+
    
   );
 }
