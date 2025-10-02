@@ -25,6 +25,9 @@ import Eula from './pages/Eula';
 import Privacy from './pages/Privacy';
 import QuickBooksConnected from './pages/QuickBooksConnected';
 import ShippingSchedulePage from './pages/ShippingSchedulePage';
+import PottingListPage from "./pages/CratePottingListPage";
+import ListPottingListsPage from "./pages/ListPottingListsPage";
+import PottingReportBySize from './Reports/Potting-List/PottingReportBySize';
 
 
 // function ProtectedRoute({ children }) {
@@ -151,6 +154,26 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/shippingschedule" element={
         <ProtectedRoute>
           <ShippingSchedulePage />
+        </ProtectedRoute>
+      } />
+      <Route path="/create-pottinglist" element={
+        <ProtectedRoute>
+          <PottingListPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/create-pottinglist/:id" element={
+        <ProtectedRoute>
+          <PottingListPage />
+        </ProtectedRoute>
+      } />
+     <Route path="/list-pottinglists" element={
+        <ProtectedRoute>
+          <ListPottingListsPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/potting-report-by-size" element={
+        <ProtectedRoute>
+          <PottingReportBySize />
         </ProtectedRoute>
       } />
       <Route

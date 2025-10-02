@@ -92,7 +92,8 @@ export default function LowStockWidget({
         <div className={`space-y-3 ${className}`}>
             <div className="rounded-xl border p-3">
                 <div className="mb-1 flex items-center justify-between">
-                    <div className="font-medium">LOW STOCK (Top 5)
+                    <div className="font-medium">
+                         <h2 className="text-lg font-semibold">LOW STOCK (Top 5)</h2>
                         <div className="text-xs text-gray-500">
                             Top 5 low stock items
                         </div>

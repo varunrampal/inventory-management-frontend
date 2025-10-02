@@ -83,8 +83,12 @@ export default function EstimateDetails() {
                         </button>
                     </div> */}
                     <WhatsNextCard
+                        estimate={estimate}
                         onConvert={(type) => {
                             if (type === "package") navigate(`/create-package/${estimate.estimateId}`);
+                            if (type === "pottinglist") navigate("/create-pottinglist",{state:{
+                                estimate: estimate
+                            }});
                             if (type === "shipment") navigate(`/create-shipment/${estimate.estimateId}`);
                             if (type === "invoice") navigate(`/create-invoice/${estimate.estimateId}`);
                         }}
