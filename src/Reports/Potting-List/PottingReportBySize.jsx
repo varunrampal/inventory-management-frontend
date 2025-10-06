@@ -6,6 +6,7 @@ import Layout from "../../components/Layout";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 const seasons = ["Spring", "Summer", "Fall", "Winter"];
+const allSizes = ["#1", "#2", "#3", "#5", "#7", "#10", "#20", "10 cm", "50P", "72P"];
 // const { realmId } = useRealm();
 
 export default function PottingReportBySize() {
@@ -13,6 +14,7 @@ export default function PottingReportBySize() {
   const [season, setSeason] = useState("");
   const [customer, setCustomer] = useState("");
   const [sort, setSort] = useState("totalDesc");
+  const [selectedSizes, setSelectedSizes] = useState([]);
   const [top, setTop] = useState(50);
 
   const [loading, setLoading] = useState(false);
@@ -37,7 +39,9 @@ export default function PottingReportBySize() {
         if (customer) params.set("customer", customer);
         if (sort) params.set("sort", sort);
         if (top) params.set("top", top);
-
+        if (selectedSizes.length) {
+          selectedSizes.forEach(sz => params.append("sizes", sz));
+        }
         const res = await fetch(`${API_BASE}/admin/pottinglists/report/by-size?${params}`, {
           credentials: "include",
           signal: ctl.signal
@@ -51,7 +55,7 @@ export default function PottingReportBySize() {
       }
     })();
     return () => ctl.abort();
-  }, [realmId, year, season, customer, sort, top]);
+  }, [realmId, year, season, customer, sort, top, selectedSizes]);
 
 
     // === PRINTING ===
@@ -88,6 +92,8 @@ export default function PottingReportBySize() {
       </div>
 
       {/* Filters */}
+
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-6 no-print">
         <select className="rounded-md border p-2"
           value={year} onChange={(e) => setYear(e.target.value)}>
@@ -115,8 +121,32 @@ export default function PottingReportBySize() {
         </select>
 
         <select className="rounded-md border p-2" value={top} onChange={(e) => setTop(Number(e.target.value))}>
-          {[10, 25, 50, 100, 500].map(n => <option key={n} value={n}>Top {n}/size</option>)}
+          {[10, 25, 50, 100, 500].map(n => <option key={n} value={n}>Top {n}</option>)}
         </select>
+
+        <div className="col-span-1 sm:col-span-6 no-print">
+  <div className="flex flex-wrap gap-2">
+  {allSizes.map(sz => {
+      const on = selectedSizes.includes(sz);
+      return (
+        <label key={sz} className={`inline-flex items-center gap-2 rounded-md border px-2 py-1 cursor-pointer ${on ? "bg-blue-50 border-blue-300" : ""}`}>
+          <input
+            type="checkbox"
+            className="accent-blue-600"
+            checked={on}
+            onChange={(e) =>
+              setSelectedSizes(prev =>
+                e.target.checked ? [...prev, sz] : prev.filter(s => s !== sz)
+              )
+            }
+          />
+          <span className="text-sm">{sz}</span>
+        </label>
+      );
+    })}
+  </div>
+</div>
+
 
         <div className="p-2 text-sm text-gray-600 self-center">
           {loading ? "Loading…" : `${rows.length} size group(s)`}
@@ -134,7 +164,8 @@ export default function PottingReportBySize() {
                 Filters:&nbsp;
                 Year: <strong>{year || "All"}</strong>,&nbsp;
                 Season: <strong>{season || "All"}</strong>,&nbsp;
-                Customer: <strong>{customer || "All"}</strong>
+                Customer: <strong>{customer || "All"}</strong>,&nbsp;
+                Sizes: <strong>{selectedSizes.length ? selectedSizes.join(", ") : "All"}</strong>
               </div>
               <div className="text-xs text-gray-600">
                 Generated: {new Date().toLocaleString()}
