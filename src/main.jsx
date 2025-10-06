@@ -28,7 +28,9 @@ import ShippingSchedulePage from './pages/ShippingSchedulePage';
 import PottingListPage from "./pages/CratePottingListPage";
 import ListPottingListsPage from "./pages/ListPottingListsPage";
 import PottingReportBySize from './Reports/Potting-List/PottingReportBySize';
-
+import TimesheetsPage from './TimeSheet/pages/TimesheetsPage';
+import EmployeesPage from './TimeSheet/pages/EmployeesPage';
+import PayrollReport from './TimeSheet/pages/PayrollReport';
 
 // function ProtectedRoute({ children }) {
 //   const token = localStorage.getItem('token'); // Replace with actual authentication logic
@@ -36,6 +38,7 @@ import PottingReportBySize from './Reports/Potting-List/PottingReportBySize';
 // }
 
 
+const { realmId } = localStorage.getItem("selectedRealmId");
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <>
@@ -174,6 +177,22 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Route path="/potting-report-by-size" element={
         <ProtectedRoute>
           <PottingReportBySize />
+        </ProtectedRoute>
+      } />
+      <Route path="/time-sheet" element={
+        <ProtectedRoute>
+          <TimesheetsPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/employees" element={
+        <ProtectedRoute>
+          <EmployeesPage realmId={realmId} />
+        </ProtectedRoute>
+      } />
+
+      <Route path="/payroll-report" element={
+        <ProtectedRoute>
+          <PayrollReport />
         </ProtectedRoute>
       } />
       <Route

@@ -147,9 +147,16 @@ export default function Sidebar({ open, setOpen }) {
  
             </SubMenu>
             <NavItem to="/shippingschedule" label="Schedule"  activeWhen={["/shippingschedule/"]} />
+           
 
-            <SubMenu label="Reports" activeWhen={["/potting-report-by-size"]}>
+            <SubMenu label="Payroll" activeWhen={["/time-sheet", "/employees"]}>
+              <NavItem to="/time-sheet" label="Time Sheet"  activeWhen={["/time-sheet/"]} />
+              <NavItem to="/employees" label="Employees"  activeWhen={["/employees/"]} />
+            </SubMenu>
+
+            <SubMenu label="Reports" activeWhen={["/potting-report-by-size","/payroll-report"]}>
               <NavItem to="/potting-report-by-size" label="Potting Report" />
+              <NavItem to="/payroll-report" label="Payroll Report" />
             </SubMenu>
 
             {/* QuickBooks / Sync group */}
