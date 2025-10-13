@@ -3,6 +3,7 @@ import { useState, useEffect, useRef} from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CompanySelector from './CompanySelector';
 import logout from '../assets/user-thumbnail.png'; // Adjust the path as necessary
+import { useAuth } from "../context/AuthContext";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ export default function Header() {
    const dropdownRef = useRef(null);
   const token = localStorage.getItem('token');
   const location = useLocation();
+   const { setUser } = useAuth();
 const isEstimateDetailsPage = location.pathname.includes('/estimate/') && location.pathname.includes('/details');
 console.log(isEstimateDetailsPage, location.pathname);
 
@@ -52,6 +54,8 @@ console.log(isEstimateDetailsPage, location.pathname);
 
     localStorage.removeItem('token');
     localStorage.removeItem('selectedRealmId');
+    localStorage.removeItem("user");
+    setUser(null); 
     navigate('/login');
   };
   return (

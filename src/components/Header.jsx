@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import CompanySelector from "./CompanySelector";
 import logout from "../assets/user-thumbnail.png"; // Adjust the path as necessary
 
@@ -24,6 +25,7 @@ export default function Header({ onMenuClick }) {
   //   : "http://localhost:4000";
 
   const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+     const { setUser } = useAuth();
 
   useEffect(() => {
     if (!token || !realmId) return;
@@ -51,6 +53,8 @@ export default function Header({ onMenuClick }) {
   const handleLogout = async () => {
     localStorage.removeItem("token");
     localStorage.removeItem("selectedRealmId");
+     localStorage.removeItem("user");
+    setUser(null); 
     navigate("/login");
   };
 

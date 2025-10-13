@@ -14,6 +14,7 @@ import SyncQuickbooks from './pages/SyncQuickbooks';
 import Tab from './pages/Tab';
 import ProtectedRoute from './ProtectedRoute';
 import { RealmProvider } from './context/RealmContext';
+import { AuthProvider } from './context/AuthContext';
 import './styles.css';
 import EstimatesList from './pages/EstimatesList';
 import EstimateDetails from './pages/EstimateDetails';
@@ -31,6 +32,7 @@ import PottingReportBySize from './Reports/Potting-List/PottingReportBySize';
 import TimesheetsPage from './TimeSheet/pages/TimesheetsPage';
 import EmployeesPage from './TimeSheet/pages/EmployeesPage';
 import PayrollReport from './TimeSheet/pages/PayrollReport';
+import AllotmentsPage from './TimeSheet/pages/AllotmentsPage';
 
 // function ProtectedRoute({ children }) {
 //   const token = localStorage.getItem('token'); // Replace with actual authentication logic
@@ -38,10 +40,11 @@ import PayrollReport from './TimeSheet/pages/PayrollReport';
 // }
 
 
-const { realmId } = localStorage.getItem("selectedRealmId");
+const { realmId } = localStorage.getItem("selectedRealmId") ? JSON.parse(localStorage.getItem("selectedRealmId")) : {};
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <>
+   <AuthProvider>
   <RealmProvider>
   <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover draggable pauseOnFocusLoss /> 
   <BrowserRouter>
@@ -51,9 +54,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       {/* <Route path="/dashboard" element={<AdminDashboard />} /> */}
       <Route 
         path="/dashboard" element={
-          <ProtectedRoute>
-            <AdminDashboard />
-          </ProtectedRoute>
+         
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+         
         } />
         <Route 
         path="/inventory" element={
@@ -195,6 +200,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <PayrollReport />
         </ProtectedRoute>
       } />
+      <Route path="/employee-allotment" element={
+        <ProtectedRoute>
+          <AllotmentsPage />
+        </ProtectedRoute>
+      } />
       <Route
           path="/eula"
           element={
@@ -227,5 +237,6 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </Routes>
   </BrowserRouter>
   </RealmProvider>
+   </AuthProvider>
   </>
 );

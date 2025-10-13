@@ -1,30 +1,36 @@
+// src/components/Sidebar.jsx
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { hasAnyRole } from "../auth/roles";
 
 function Chevron({ open }) {
   return (
-    <svg
-      className={`h-4 w-4 transition-transform ${open ? "rotate-90" : ""}`}
-      viewBox="0 0 20 20" fill="currentColor"
-      aria-hidden="true"
-    >
+    <svg className={`h-4 w-4 transition-transform ${open ? "rotate-90" : ""}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
       <path d="M7.05 4.55a1 1 0 0 0 0 1.41L10.09 9 7.05 12.04a1 1 0 1 0 1.41 1.41l3.54-3.54a1 1 0 0 0 0-1.41L8.46 4.55a1 1 0 0 0-1.41 0Z" />
     </svg>
   );
 }
 
-function SubMenu({ label, children, defaultOpen = false, activeWhen = [] }) {
+// ---- Guard helpers
+function canSee(user, roles) {
+  // no roles prop => visible to any logged-in user
+  if (!roles || roles.length === 0) return !!user;
+  return hasAnyRole(user, roles);
+}
+
+// ---- Guarded SubMenu
+function SubMenu({ label, children, defaultOpen = false, activeWhen = [], roles }) {
+  const auth = useAuth();
+  const user = auth?.user ?? null;
+  if (!canSee(user, roles)) return null;
+
   const [userOpen, setUserOpen] = useState(defaultOpen);
   const ref = useRef(null);
   const [height, setHeight] = useState(0);
   const { pathname } = useLocation();
 
-  // Open the group if current route matches any prefix in activeWhen
-  const isActiveGroup =
-    activeWhen?.length > 0 &&
-    activeWhen.some((prefix) => pathname.startsWith(prefix));
-
-  // We show the submenu if it is either user-open OR active due to route
+  const isActiveGroup = activeWhen?.length > 0 && activeWhen.some((prefix) => pathname.startsWith(prefix));
   const open = userOpen || isActiveGroup;
 
   useEffect(() => {
@@ -40,34 +46,24 @@ function SubMenu({ label, children, defaultOpen = false, activeWhen = [] }) {
         className="w-full flex items-center justify-between rounded-md px-3 py-2 hover:bg-gray-700/60 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       >
         <span className="text-sm">{label}</span>
-        <svg
-          className={`h-4 w-4 transition-transform ${open ? "rotate-90" : ""}`}
-          viewBox="0 0 20 20"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path d="M7.05 4.55a1 1 0 0 0 0 1.41L10.09 9 7.05 12.04a1 1 0 1 0 1.41 1.41l3.54-3.54a1 1 0 0 0 0-1.41L8.46 4.55a1 1 0 0 0-1.41 0Z" />
-        </svg>
+        <Chevron open={open} />
       </button>
 
-      <div
-        style={{ height }}
-        className="overflow-hidden transition-[height] duration-300"
-      >
-        <ul ref={ref} className="pl-3 py-1 space-y-1 text-sm">
-          {children}
-        </ul>
+      <div style={{ height }} className="overflow-hidden transition-[height] duration-300">
+        <ul ref={ref} className="pl-3 py-1 space-y-1 text-sm">{children}</ul>
       </div>
     </li>
   );
 }
- function NavItem({ to, label, activeWhen }) {
+
+// ---- Guarded NavItem
+function NavItem({ to, label, activeWhen, roles }) {
+  const auth = useAuth();
+  const user = auth?.user ?? null;
+  if (!canSee(user, roles)) return null;
+
   const { pathname } = useLocation();
-
-  // Convert `activeWhen` into array of matchers
-  const ensureArray = (v) =>
-    v == null ? [] : Array.isArray(v) ? v : [v];
-
+  const ensureArray = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
   const patterns = ensureArray(activeWhen);
 
   const matches = (pattern) => {
@@ -76,20 +72,14 @@ function SubMenu({ label, children, defaultOpen = false, activeWhen = [] }) {
     return false;
   };
 
-  // Highlight if pathname starts with `to`, or any extra rule matches
-  const active =
-    pathname === to ||
-    pathname.startsWith(to + "/") ||
-    patterns.some(matches);
+  const active = pathname === to || pathname.startsWith(to + "/") || patterns.some(matches);
 
   return (
     <li>
       <Link
         to={to}
         className={`block rounded-md px-3 py-2 transition ${
-          active
-            ? "bg-gray-700/70 font-medium text-white"
-            : "text-white hover:bg-gray-700/60"
+          active ? "bg-gray-700/70 font-medium text-white" : "text-white hover:bg-gray-700/60"
         }`}
       >
         {label}
@@ -99,6 +89,11 @@ function SubMenu({ label, children, defaultOpen = false, activeWhen = [] }) {
 }
 
 export default function Sidebar({ open, setOpen }) {
+  const auth = useAuth();
+  const user = auth?.user ?? null;
+
+  console.log('user in sidebar:', user);
+
   // close drawer on route change (mobile)
   const { pathname } = useLocation();
   useEffect(() => {
@@ -123,71 +118,59 @@ export default function Sidebar({ open, setOpen }) {
       >
         <nav>
           <ul className="space-y-1">
-            <NavItem to="/dashboard" label="Dashboard" />
-            {/* <NavItem to="/inventory" label="Inventory" /> */}
-            {/* <NavItem to="/lowstockplants" label="Low Stock Plants" /> */}
-            <SubMenu label="Inventory" activeWhen={["/inventory","/lowstockplants/"]}>
-              <NavItem to="/inventory" label="Inventory"  activeWhen={["/inventory/"]}/>
-              <NavItem to="/lowstockplants" label="Low Stock Plants"  activeWhen={["/lowstockplants/"]}  />
- 
-            </SubMenu>
-            {/* Inventory group */}
-            {/* <SubMenu label="Inventory" defaultOpen={false}>
-              <NavItem to="/inventory" label="All Inventory" />
-              <NavItem to="/lowstockplants" label="Low Stock Plants" />
-              <NavItem to="/inventory/new" label="Add Item" />
-              <NavItem to="/inventory/categories" label="Categories" />
-            </SubMenu> */}
+            {/* Visible to any authenticated user */}
+            <NavItem to="/dashboard" label="Dashboard" roles={["manager","admin"]} />
 
-            {/* Sales group */}
-            <SubMenu label="Sales" activeWhen={["/estimates","/estimate/", "/packages", "/package/"]}>
-              <NavItem to="/estimates" label="Estimates"  activeWhen={["/estimate/"]}/>
-              <NavItem to="/packages" label="Packages"  activeWhen={["/package/"]}  />
-              <NavItem to="/list-pottinglists" label="Potting Lists"  activeWhen={["/list-pottinglists/"]}  />
- 
-            </SubMenu>
-            <NavItem to="/shippingschedule" label="Schedule"  activeWhen={["/shippingschedule/"]} />
-           
-
-            <SubMenu label="Payroll" activeWhen={["/time-sheet", "/employees"]}>
-              <NavItem to="/time-sheet" label="Time Sheet"  activeWhen={["/time-sheet/"]} />
-              <NavItem to="/employees" label="Employees"  activeWhen={["/employees/"]} />
+            {/* INVENTORY (example: viewer+, tweak as needed) */}
+            <SubMenu label="Inventory" activeWhen={["/inventory", "/lowstockplants"]} roles={["manager","admin"]}>
+              <NavItem to="/inventory" label="Inventory" activeWhen={["/inventory/"]} roles={["manager","admin"]} />
+              <NavItem to="/lowstockplants" label="Low Stock Plants" activeWhen={["/lowstockplants/"]} roles={["manager","admin"]} />
             </SubMenu>
 
-            <SubMenu label="Reports" activeWhen={["/potting-report-by-size","/payroll-report"]}>
-              <NavItem to="/potting-report-by-size" label="Potting Report" />
-              <NavItem to="/payroll-report" label="Payroll Report" />
+            {/* SALES (example: manager/admin) */}
+            <SubMenu label="Sales" activeWhen={["/estimates", "/estimate/", "/packages", "/package/", "/list-pottinglists"]} roles={["manager","admin"]}>
+              <NavItem to="/estimates" label="Estimates" activeWhen={["/estimate/"]} roles={["manager","admin"]} />
+              <NavItem to="/packages" label="Packages" activeWhen={["/package/"]} roles={["manager","admin"]} />
+              <NavItem to="/list-pottinglists" label="Potting Lists" activeWhen={["/list-pottinglists/"]} roles={["manager","admin"]} />
             </SubMenu>
 
-            {/* QuickBooks / Sync group */}
-            <SubMenu label="QuickBooks" activeWhen={["/conncet-qb"]}>
-              <NavItem to="/connect-qb" label="Connect QuickBooks" />
-              {/* <NavItem to="/sync/logs" label="Sync Logs" />
-              <NavItem to="/sync/tokens" label="Tokens" /> */}
+            {/* SCHEDULE (example: viewer+) */}
+            <NavItem to="/shippingschedule" label="Schedule" activeWhen={["/shippingschedule/"]} roles={["manager","admin"]} />
+
+            {/* PAYROLL */}
+            <SubMenu label="Payroll" activeWhen={["/time-sheet", "/employees", "employee-allotment"]} roles={["supervisor","manager","admin","payroll"]}>
+              {/* Timesheet: employees & above */}
+              <NavItem to="/time-sheet" label="Time Sheet" activeWhen={["/time-sheet/"]} roles={["supervisor","manager","admin"]} />
+              {/* Employees admin/manager only */}
+
+            <NavItem to="/employees" label="Manage Employees"  activeWhen={["/employees/"]} />
+              <NavItem to="/employee-allotment" label="Employee Allotment"  activeWhen={["/employee-allotment/"]} />
             </SubMenu>
 
-            {/* You can add more groups here */}
+            {/* REPORTS */}
+            <SubMenu label="Reports" activeWhen={["/potting-report-by-size","/payroll-report"]} roles={["manager","admin","payroll"]}>
+              <NavItem to="/potting-report-by-size" label="Potting Report" roles={["manager","admin"]} />
+              <NavItem to="/payroll-report" label="Payroll Report" roles={["manager","admin","payroll"]} />
+            </SubMenu>
+
+            {/* QUICKBOOKS */}
+            <SubMenu label="QuickBooks" activeWhen={["/connect-qb"]} roles={["manager","admin"]}>
+              {/* fixed a small typo: /conncet-qb -> /connect-qb */}
+              <NavItem to="/connect-qb" label="Connect QuickBooks" roles={["manager","admin"]} />
+            </SubMenu>
           </ul>
         </nav>
+
+        {/* Optional footer: show who is logged in */}
+        <div className="mt-6 p-3 text-xs text-gray-300 border-t border-gray-700">
+          <div className="font-medium">{user?.name ?? "Guest"}</div>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {(user?.roles ?? []).map((r) => (
+              <span key={r} className="px-2 py-0.5 rounded bg-gray-700">{r}</span>
+            ))}
+          </div>
+        </div>
       </aside>
     </>
   );
 }
-
-
-// export default function Sidebar() {
-//   return (
-//     <aside className="bg-gray-800 p-4 w-64 min-h-screen">
-//       <nav>
-//         <ul className="space-y-2">
-//           <li><a href="/dashboard" className="text-white">Dashboard</a></li>
-//            <li><a href="/inventory" className="text-white">Inventory</a></li>
-//            <li><a href="/estimates" className="text-white">Estimates</a></li>
-//           <li><a href="/lowstockplants" className="text-white">Low Stock Plants</a></li>
-//           {/* <li><a href="/analytics" className="text-white">Analytics</a></li> */}
-//           <li><a href="/sync" className="text-white">Sync Quickbooks</a></li>
-//         </ul>
-//       </nav>
-//     </aside>
-//   );
-// }

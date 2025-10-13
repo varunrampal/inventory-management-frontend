@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../context/AuthContext";
 
 
 // const BASE_URL = import.meta.env.PROD
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
+   const { setUser } = useAuth();  
   const navigate = useNavigate();
 
   // const handleLogin = async () => {
@@ -30,10 +32,27 @@ export default function LoginPage() {
   //   }
   // };
 
-  const handleSubmit = async (e) => {
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const res = await fetch(`${BASE_URL}/admin/login`, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ email, password })
+  //     });
+  //     if (!res.ok) throw new Error('Login failed');
+  //     const data = await res.json();
+  //     localStorage.setItem('token', data.token);
+  //     navigate('/dashboard');
+  //   } catch (err) {
+  //     setError('Invalid email or password');
+  //   }
+  // };
+
+    const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${BASE_URL}/admin/login`, {
+      const res = await fetch(`${BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -41,13 +60,19 @@ export default function LoginPage() {
       if (!res.ok) throw new Error('Login failed');
       const data = await res.json();
       localStorage.setItem('token', data.token);
-      navigate('/dashboard');
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+      const roles = Array.isArray(data.user?.roles) ? data.user.roles : [];
+      let dest = '/dashboard';
+       if (roles.includes('supervisor')) dest = '/time-sheet';
+    // optionally, send employees to timesheet too:
+    // else if (roles.includes('employee')) dest = '/time-sheet';
+
+    navigate(dest, { replace: true });
     } catch (err) {
       setError('Invalid email or password');
     }
   };
-
-
 
   return (
 
