@@ -138,11 +138,11 @@ export default function Sidebar({ open, setOpen }) {
             <NavItem to="/shippingschedule" label="Schedule" activeWhen={["/shippingschedule/"]} roles={["manager","admin"]} />
 
             {/* PAYROLL */}
-            <SubMenu label="Payroll" activeWhen={["/time-sheet", "/employees", "employee-allotment"]} roles={["supervisor","manager","admin","payroll"]}>
+            <SubMenu label="Payroll" activeWhen={["/time-sheet", "/employees", "employee-allotment","/employee-payout"]} roles={["supervisor","manager","admin","payroll"]}>
               {/* Timesheet: employees & above */}
               <NavItem to="/time-sheet" label="Time Sheet" activeWhen={["/time-sheet/"]} roles={["supervisor","manager","admin"]} />
               {/* Employees admin/manager only */}
-
+               <NavItem to="/employee-payout" label="Employee Payout" activeWhen={["/employee-payout/"]} roles={["manager","admin"]} />
             <NavItem to="/employees" label="Manage Employees"  activeWhen={["/employees/"]} />
               <NavItem to="/employee-allotment" label="Employee Allotment"  activeWhen={["/employee-allotment/"]} />
             </SubMenu>

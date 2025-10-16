@@ -33,6 +33,7 @@ import TimesheetsPage from './TimeSheet/pages/TimesheetsPage';
 import EmployeesPage from './TimeSheet/pages/EmployeesPage';
 import PayrollReport from './TimeSheet/pages/PayrollReport';
 import AllotmentsPage from './TimeSheet/pages/AllotmentsPage';
+import AdminPayrollTimesheet from './TimeSheet/pages/AdminPayrollTimesheet';  
 
 // function ProtectedRoute({ children }) {
 //   const token = localStorage.getItem('token'); // Replace with actual authentication logic
@@ -203,6 +204,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Route path="/employee-allotment" element={
         <ProtectedRoute>
           <AllotmentsPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/employee-payout" element={
+        <ProtectedRoute>
+          <AdminPayrollTimesheet />
         </ProtectedRoute>
       } />
       <Route
