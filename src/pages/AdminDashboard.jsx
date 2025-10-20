@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import LowStockWidget from '../components/LowStockWidget';
 import WeeklyPackagesWidget from '../components/WeeklyPackagesWidget';
+import DashboardCashSummarySmall from "../CashRegister/components/DashboardCashSummarySmall.jsx";
+import DashboardCashTotalsToDate from "../CashRegister/components/DashboardCashTotalsToDate.jsx";
 import Layout from '../components/Layout';
 import { useRealm } from '../context/RealmContext';
 
@@ -120,37 +122,25 @@ export default function AdminDashboard() {
 
    return (
     <Layout>
-      <div className="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* If you also want the detailed card: */}
-        <section className="lg:col-span-2">
-          {/* <UpcomingWeekPackages realmId={realmId} /> */}
-          
-          <WeeklyPackagesWidget realmId={realmId} className="mb-6" />
-        </section>
+    <div className="p-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Left: shipping widgets */}
+      <section className="lg:col-span-2 space-y-4">
+        {/* <UpcomingWeekPackages realmId={realmId} /> */}
+        <WeeklyPackagesWidget realmId={realmId} className="mb-6" />
+                {/* Finance: Today (small) + Totals To-Date */}
+       
+        {/* <DashboardCashTotalsToDate /> */}
+        {/* Or constrain to fiscal year start: */}
+        <DashboardCashTotalsToDate startDate="2025-01-01" />
+      </section>
 
-        {/* <aside className="lg:col-span-1 rounded-2xl border p-4">
-          <div className="mb-3">
-            <h3 className="text-lg font-semibold">Upcoming Deliveries/Pickups</h3>
-            {data.range && (
-              <div className="text-xs text-gray-500">
-                {data.range.from} → {data.range.to} (exclusive)
-              </div>
-            )}
-          </div>
-
-          {loading ? (
-            <div className="text-sm text-gray-500">Loading…</div>
-          ) : err ? (
-            <div className="text-sm text-red-600">Error: {err}</div>
-          ) : (
-           <UpcomingWeekPackages realmId={realmId} /> 
-             
-          )}
-          
-        </aside> */}
-       {/* <LowStockWidget realmId="demo" demo /> */}
-      <LowStockWidget realmId={realmId} groupBy="band" threshold={10} />
-      </div>
+      {/* Right: side column — low stock + finance cards */}
+      <aside className="space-y-4">
+        <LowStockWidget realmId={realmId} groupBy="band" threshold={10} />
+      </aside>
+    </div>
+  </div>
     </Layout>
   );
 }

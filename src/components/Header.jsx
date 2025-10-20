@@ -18,7 +18,10 @@ export default function Header({ onMenuClick }) {
   const isEstimateDetailsPage =
     location.pathname.includes("/estimate/") &&
     location.pathname.includes("/details");
-  console.log(isEstimateDetailsPage, location.pathname);
+   const auth = useAuth();
+   const user = auth?.user ?? null;
+
+  console.log('user in header:', user?.roles[0]);
 
   // const BASE_URL = import.meta.env.PROD
   //   ? "https://inventory-management-server-vue1.onrender.com"
@@ -110,7 +113,7 @@ export default function Header({ onMenuClick }) {
         {/* Right: Company selector + Avatar dropdown */}
         <div className="relative flex items-center gap-3" ref={dropdownRef}>
           <CompanySelector
-            disabled={isEstimateDetailsPage}
+            disabled={isEstimateDetailsPage || user?.roles[0] === "supervisor"}
             onChange={setRealmId}
           />
 
@@ -124,7 +127,7 @@ export default function Header({ onMenuClick }) {
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 shadow-lg rounded-md z-50">
               <ul className="py-1 text-sm text-gray-700">
-                <li>
+                {/* <li>
                   <Link
                     to="/settings"
                     className="block px-4 py-2 hover:bg-gray-100"
@@ -132,7 +135,7 @@ export default function Header({ onMenuClick }) {
                   >
                     Settings
                   </Link>
-                </li>
+                </li> */}
                 <li>
                   <button
                     onClick={handleLogout}

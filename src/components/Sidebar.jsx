@@ -23,6 +23,8 @@ function canSee(user, roles) {
 function SubMenu({ label, children, defaultOpen = false, activeWhen = [], roles }) {
   const auth = useAuth();
   const user = auth?.user ?? null;
+
+
   if (!canSee(user, roles)) return null;
 
   const [userOpen, setUserOpen] = useState(defaultOpen);
@@ -92,7 +94,7 @@ export default function Sidebar({ open, setOpen }) {
   const auth = useAuth();
   const user = auth?.user ?? null;
 
-  console.log('user in sidebar:', user);
+  console.log('user in sidebar:', user.roles[0]);
 
   // close drawer on route change (mobile)
   const { pathname } = useLocation();
@@ -146,6 +148,11 @@ export default function Sidebar({ open, setOpen }) {
             <NavItem to="/employees" label="Manage Employees"  activeWhen={["/employees/"]} roles={["manager","admin"]} />
               <NavItem to="/employee-allotment" label="Employee Allotment"  activeWhen={["/employee-allotment/"]} roles={["manager","admin"]} />
             </SubMenu>
+
+            <SubMenu label="Cash Register" activeWhen={["/cash-register/"]}>
+  {/* other finance pages */}
+  <NavItem to="/cash-register" label="Manage" activeWhen={["/cash-register"]} />
+</SubMenu>
 
             {/* REPORTS */}
             <SubMenu label="Reports" activeWhen={["/potting-report-by-size","/payroll-report"]} roles={["manager","admin","payroll"]}>
