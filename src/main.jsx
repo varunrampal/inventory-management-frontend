@@ -35,6 +35,7 @@ import PayrollReport from './TimeSheet/pages/PayrollReport';
 import AllotmentsPage from './TimeSheet/pages/AllotmentsPage';
 import AdminPayrollTimesheet from './TimeSheet/pages/AdminPayrollTimesheet';  
 import CashRegister from './CashRegister/pages/CashRegister';
+import TrackingPage from './TruckTracking/pages/TrackingPage'
 // function ProtectedRoute({ children }) {
 //   const token = localStorage.getItem('token'); // Replace with actual authentication logic
 //   return token ? children : <Navigate to="/login"/>;
@@ -216,6 +217,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <CashRegister />
         </ProtectedRoute>
       } />   
+      <Route path="/truck-tracking" element={
+        <ProtectedRoute>
+          <TrackingPage />
+        </ProtectedRoute>
+      } />  
       <Route
           path="/eula"
           element={
