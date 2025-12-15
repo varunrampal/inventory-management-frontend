@@ -35,7 +35,9 @@ import PayrollReport from './TimeSheet/pages/PayrollReport';
 import AllotmentsPage from './TimeSheet/pages/AllotmentsPage';
 import AdminPayrollTimesheet from './TimeSheet/pages/AdminPayrollTimesheet';  
 import CashRegister from './CashRegister/pages/CashRegister';
-import TrackingPage from './TruckTracking/pages/TrackingPage'
+import TrackingPage from './TruckTracking/pages/TrackingPage';
+import PaymentReconcilePage from './Payments/pages/PaymentsReconcilePage';
+import DriverTracker from './TruckTracking/pages/DriverTracker';
 // function ProtectedRoute({ children }) {
 //   const token = localStorage.getItem('token'); // Replace with actual authentication logic
 //   return token ? children : <Navigate to="/login"/>;
@@ -53,6 +55,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <Routes>
       <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/driver-tracker" element={<DriverTracker />} />
       {/* <Route path="/dashboard" element={<AdminDashboard />} /> */}
       <Route 
         path="/dashboard" element={
@@ -220,6 +223,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Route path="/truck-tracking" element={
         <ProtectedRoute>
           <TrackingPage />
+        </ProtectedRoute>
+      } />  
+          <Route path="/payments" element={
+        <ProtectedRoute>
+          <PaymentReconcilePage />
         </ProtectedRoute>
       } />  
       <Route

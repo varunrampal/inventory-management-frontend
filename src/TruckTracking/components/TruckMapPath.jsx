@@ -1,11 +1,6 @@
-// TruckMap.jsx
 import React, { useEffect, useState } from "react";
-import {
-  GoogleMap,
-  Marker,
-  Polyline,          // 👈 new
-  useJsApiLoader,
-} from "@react-google-maps/api";
+import truckIcon from "../../assets/truck_marker.png";
+import { GoogleMap, Marker, Polyline, useJsApiLoader } from "@react-google-maps/api";
 
 const containerStyle = {
   width: "100%",
@@ -14,22 +9,27 @@ const containerStyle = {
 
 const DEFAULT_CENTER = { lat: 49.0504, lng: -122.3045 };
 
-// adjust for your backend IP
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;//"http://10.0.0.8:4000";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const LATEST_URL = `${BASE_URL}/admin/tracking`; // all latest positions
 const HISTORY_URL = `${BASE_URL}/admin/tracking/history`; // /:driverId
+const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY || "";
+
+const driverOptions = [
+  "Ankush",
+  "Harinderjeet",
+  "Gursharan",
+  // add more driver IDs as needed
+];
 
 function TruckMapPath() {
-  const [locations, setLocations] = useState([]);      // latest location per driver
+  const [locations, setLocations] = useState([]); // latest location per driver
   const [historyPoints, setHistoryPoints] = useState([]); // full path for one driver
   const [center, setCenter] = useState(DEFAULT_CENTER);
-
-  // TODO: later – make this selectable in UI
-  const [selectedDriverId] = useState("Ankush-01");
+  const [selectedDriverId, setSelectedDriverId] = useState("Ankush");
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey: "AIzaSyCk0MI_ZjbPklgniksVPzE8sIqAo17nmgA",
+    googleMapsApiKey: MAPS_KEY,
   });
 
   // Fetch latest positions (for markers)
@@ -37,7 +37,17 @@ function TruckMapPath() {
     try {
       const res = await fetch(LATEST_URL);
       const data = await res.json();
-      setLocations(data);
+      const list = Array.isArray(data) ? data : [data];
+      setLocations(list);
+
+      const selected = list.find((loc) => loc.driverId === selectedDriverId);
+      if (selected) {
+        const latNum = Number(selected.lat);
+        const lngNum = Number(selected.lng);
+        if (!Number.isNaN(latNum) && !Number.isNaN(lngNum)) {
+          setCenter({ lat: latNum, lng: lngNum });
+        }
+      }
     } catch (err) {
       console.error("Error fetching latest:", err);
     }
@@ -46,12 +56,10 @@ function TruckMapPath() {
   // Fetch history for one driver (path)
   const fetchHistory = async () => {
     try {
-      const res = await fetch(
-        `${HISTORY_URL}/${encodeURIComponent(selectedDriverId)}?minutes=180`
-      );
+      const res = await fetch(`${HISTORY_URL}/${encodeURIComponent(selectedDriverId)}?minutes=180`);
       const data = await res.json();
 
-      console.log("🧵 History points:", data);
+      console.log("History points:", data);
       setHistoryPoints(data);
 
       if (Array.isArray(data) && data.length > 0) {
@@ -82,7 +90,7 @@ function TruckMapPath() {
   if (!isLoaded) {
     return (
       <div className="w-full h-[500px] flex items-center justify-center">
-        Loading map…
+        Loading map...
       </div>
     );
   }
@@ -93,12 +101,25 @@ function TruckMapPath() {
       lat: Number(p.lat),
       lng: Number(p.lng),
     }))
-    .filter(
-      (p) => !Number.isNaN(p.lat) && !Number.isNaN(p.lng)
-    );
+    .filter((p) => !Number.isNaN(p.lat) && !Number.isNaN(p.lng));
 
   return (
-    <div className="w-full h-[500px] rounded-xl overflow-hidden border border-slate-200">
+    <div className="w-full h-[500px] rounded-xl overflow-hidden border border-slate-200 bg-white">
+      <div className="p-3 bg-white border-b border-slate-200">
+        <label className="text-sm font-semibold mr-2">Select Driver:</label>
+        <input
+          list="driver-options"
+          value={selectedDriverId}
+          onChange={(e) => setSelectedDriverId(e.target.value)}
+          className="border border-gray-300 rounded px-2 py-1 text-sm w-48"
+          placeholder="Driver ID"
+        />
+        <datalist id="driver-options">
+          {driverOptions.map((id) => (
+            <option key={id} value={id} />
+          ))}
+        </datalist>
+      </div>
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={center}
@@ -109,7 +130,7 @@ function TruckMapPath() {
           fullscreenControl: false,
         }}
       >
-        {/* Markers – latest position of all drivers */}
+        {/* Markers: latest position of all drivers */}
         {locations.map((loc) => {
           const latNum = Number(loc.lat);
           const lngNum = Number(loc.lng);
@@ -119,12 +140,15 @@ function TruckMapPath() {
             <Marker
               key={loc.driverId}
               position={{ lat: latNum, lng: lngNum }}
-              label={loc.driverId}
+              icon={{
+                url: truckIcon,
+                scaledSize: new window.google.maps.Size(54, 54),
+                anchor: new window.google.maps.Point(27, 27),
+              }}
             />
           );
         })}
-
-        {/* Polyline – full path of selected driver */}
+        {/* Polyline: full path of selected driver */}
         {path.length > 1 && (
           <Polyline
             path={path}
