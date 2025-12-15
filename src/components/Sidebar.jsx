@@ -80,9 +80,8 @@ function NavItem({ to, label, activeWhen, roles }) {
     <li>
       <Link
         to={to}
-        className={`block rounded-md px-3 py-2 transition ${
-          active ? "bg-gray-700/70 font-medium text-white" : "text-white hover:bg-gray-700/60"
-        }`}
+        className={`block rounded-md px-3 py-2 transition ${active ? "bg-gray-700/70 font-medium text-white" : "text-white hover:bg-gray-700/60"
+          }`}
       >
         {label}
       </Link>
@@ -108,9 +107,8 @@ export default function Sidebar({ open, setOpen }) {
       {/* Backdrop for mobile */}
       <div
         onClick={() => setOpen?.(false)}
-        className={`fixed inset-0 bg-black/40 z-40 lg:hidden transition-opacity ${
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-black/40 z-40 lg:hidden transition-opacity ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
       />
 
       <aside
@@ -121,49 +119,54 @@ export default function Sidebar({ open, setOpen }) {
         <nav>
           <ul className="space-y-1">
             {/* Visible to any authenticated user */}
-            <NavItem to="/dashboard" label="Dashboard" roles={["manager","admin"]} />
+            <NavItem to="/dashboard" label="Dashboard" roles={["manager", "admin"]} />
 
             {/* INVENTORY (example: viewer+, tweak as needed) */}
-            <SubMenu label="Inventory" activeWhen={["/inventory", "/lowstockplants"]} roles={["manager","admin"]}>
-              <NavItem to="/inventory" label="Inventory" activeWhen={["/inventory/"]} roles={["manager","admin"]} />
-              <NavItem to="/lowstockplants" label="Low Stock Plants" activeWhen={["/lowstockplants/"]} roles={["manager","admin"]} />
+            <SubMenu label="Inventory" activeWhen={["/inventory", "/lowstockplants"]} roles={["manager", "admin"]}>
+              <NavItem to="/inventory" label="Inventory" activeWhen={["/inventory/"]} roles={["manager", "admin"]} />
+              <NavItem to="/lowstockplants" label="Low Stock Plants" activeWhen={["/lowstockplants/"]} roles={["manager", "admin"]} />
             </SubMenu>
 
             {/* SALES (example: manager/admin) */}
-            <SubMenu label="Sales" activeWhen={["/estimates", "/estimate/", "/packages", "/package/", "/list-pottinglists"]} roles={["manager","admin"]}>
-              <NavItem to="/estimates" label="Estimates" activeWhen={["/estimate/"]} roles={["manager","admin"]} />
-              <NavItem to="/packages" label="Packages" activeWhen={["/package/"]} roles={["manager","admin"]} />
-              <NavItem to="/list-pottinglists" label="Potting Lists" activeWhen={["/list-pottinglists/"]} roles={["manager","admin"]} />
+            <SubMenu label="Sales" activeWhen={["/estimates", "/estimate/", "/packages", "/package/", "/list-pottinglists"]} roles={["manager", "admin"]}>
+              <NavItem to="/estimates" label="Estimates" activeWhen={["/estimate/"]} roles={["manager", "admin"]} />
+              <NavItem to="/packages" label="Packages" activeWhen={["/package/"]} roles={["manager", "admin"]} />
+              <NavItem to="/list-pottinglists" label="Potting Lists" activeWhen={["/list-pottinglists/"]} roles={["manager", "admin"]} />
             </SubMenu>
 
             {/* SCHEDULE (example: viewer+) */}
-            <NavItem to="/shippingschedule" label="Schedule" activeWhen={["/shippingschedule/"]} roles={["manager","admin"]} />
+            <NavItem to="/shippingschedule" label="Schedule" activeWhen={["/shippingschedule/"]} roles={["manager", "admin"]} />
 
             {/* PAYROLL */}
-            <SubMenu label="Payroll" activeWhen={["/time-sheet", "/employees", "employee-allotment","/employee-payout"]} roles={["supervisor","manager","admin","payroll"]}>
+            <SubMenu label="Payroll" activeWhen={["/time-sheet", "/employees", "employee-allotment", "/employee-payout"]} roles={["supervisor", "manager", "admin", "payroll"]}>
               {/* Timesheet: employees & above */}
-              <NavItem to="/time-sheet" label="Time Sheet" activeWhen={["/time-sheet/"]} roles={["supervisor","manager","admin"]} />
+              <NavItem to="/time-sheet" label="Time Sheet" activeWhen={["/time-sheet/"]} roles={["supervisor", "manager", "admin"]} />
               {/* Employees admin/manager only */}
-               <NavItem to="/employee-payout" label="Employee Payout" activeWhen={["/employee-payout/"]} roles={["manager","admin"]} />
-            <NavItem to="/employees" label="Manage Employees"  activeWhen={["/employees/"]} roles={["manager","admin"]} />
-              <NavItem to="/employee-allotment" label="Employee Allotment"  activeWhen={["/employee-allotment/"]} roles={["manager","admin"]} />
+              <NavItem to="/employee-payout" label="Employee Payout" activeWhen={["/employee-payout/"]} roles={["manager", "admin"]} />
+              <NavItem to="/employees" label="Manage Employees" activeWhen={["/employees/"]} roles={["manager", "admin"]} />
+              <NavItem to="/employee-allotment" label="Employee Allotment" activeWhen={["/employee-allotment/"]} roles={["manager", "admin"]} />
             </SubMenu>
 
             <SubMenu label="Cash Register" activeWhen={["/cash-register/"]}>
-  {/* other finance pages */}
-  <NavItem to="/cash-register" label="Manage" activeWhen={["/cash-register"]} />
-</SubMenu>
+              {/* other finance pages */}
+              <NavItem to="/cash-register" label="Manage" activeWhen={["/cash-register"]} />
+            </SubMenu>
+            <SubMenu label="Truck Tracking" activeWhen={["/truck-tracking/"]}>
+              {/* other finance pages */}
+              <NavItem to="/truck-tracking" label="Truck Tracking" activeWhen={["/truck-tracking"]} />
+            </SubMenu>
+
 
             {/* REPORTS */}
-            <SubMenu label="Reports" activeWhen={["/potting-report-by-size","/payroll-report"]} roles={["manager","admin","payroll"]}>
-              <NavItem to="/potting-report-by-size" label="Potting Report" roles={["manager","admin"]} />
-              <NavItem to="/payroll-report" label="Payroll Report" roles={["manager","admin","payroll"]} />
+            <SubMenu label="Reports" activeWhen={["/potting-report-by-size", "/payroll-report"]} roles={["manager", "admin", "payroll"]}>
+              <NavItem to="/potting-report-by-size" label="Potting Report" roles={["manager", "admin"]} />
+              <NavItem to="/payroll-report" label="Payroll Report" roles={["manager", "admin", "payroll"]} />
             </SubMenu>
 
             {/* QUICKBOOKS */}
-            <SubMenu label="QuickBooks" activeWhen={["/connect-qb"]} roles={["manager","admin"]}>
+            <SubMenu label="QuickBooks" activeWhen={["/connect-qb"]} roles={["manager", "admin"]}>
               {/* fixed a small typo: /conncet-qb -> /connect-qb */}
-              <NavItem to="/connect-qb" label="Connect QuickBooks" roles={["manager","admin"]} />
+              <NavItem to="/connect-qb" label="Connect QuickBooks" roles={["manager", "admin"]} />
             </SubMenu>
           </ul>
         </nav>

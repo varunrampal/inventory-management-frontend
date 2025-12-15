@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
 
 
@@ -169,6 +169,7 @@ export default function LoginPage() {
               Login
             </button>
           </form>
+           <Link to="/driver-tracker" className="text-black-500 hover:underline block mt-4">Truck Tracking</Link>
         </div>
 
         {/* Right: Logo image */}
@@ -176,8 +177,8 @@ export default function LoginPage() {
           <img src={logo} alt="Logo" className="max-w-full h-auto opacity-90" />
         </div> */}
       </div>
+           
     </div>
-
 
   );
 }

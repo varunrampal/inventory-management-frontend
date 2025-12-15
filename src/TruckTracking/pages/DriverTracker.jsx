@@ -115,7 +115,7 @@ function DriverTracker() {
 
   return (
     <div className="max-w-xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-2">Driver Live Tracking</h1>
+      <h1 className="text-2xl font-bold mb-2">Truck Live Tracking</h1>
       <p className="text-sm text-slate-600 mb-4">
         Enter your driver ID and start sharing your live location. Keep this
         page open while you are on the move.
