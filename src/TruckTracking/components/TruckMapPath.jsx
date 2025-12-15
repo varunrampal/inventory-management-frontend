@@ -35,7 +35,9 @@ function TruckMapPath() {
   // Fetch latest positions (for markers)
   const fetchLatest = async () => {
     try {
-      const res = await fetch(LATEST_URL);
+      
+      //const res = await fetch(LATEST_URL);
+      const res = await fetch(`${LATEST_URL}/${encodeURIComponent(selectedDriverId)}`);
       const data = await res.json();
       const list = Array.isArray(data) ? data : [data];
       setLocations(list);
@@ -82,7 +84,7 @@ function TruckMapPath() {
     const id = setInterval(() => {
       fetchLatest();
       fetchHistory();
-    }, 5000);
+    }, 120000);
 
     return () => clearInterval(id);
   }, [selectedDriverId]);
@@ -125,9 +127,9 @@ function TruckMapPath() {
         center={center}
         zoom={11}
         options={{
-          streetViewControl: false,
-          mapTypeControl: false,
-          fullscreenControl: false,
+          streetViewControl: true,
+          mapTypeControl: true,
+          fullscreenControl: true,
         }}
       >
         {/* Markers: latest position of all drivers */}
@@ -149,7 +151,7 @@ function TruckMapPath() {
           );
         })}
         {/* Polyline: full path of selected driver */}
-        {path.length > 1 && (
+        {/* {path.length > 1 && (
           <Polyline
             path={path}
             options={{
@@ -158,7 +160,7 @@ function TruckMapPath() {
               strokeWeight: 4,
             }}
           />
-        )}
+        )} */}
       </GoogleMap>
     </div>
   );

@@ -83,7 +83,7 @@ function DriverTracker() {
 
         const now = Date.now();
         // Throttle sends to ~every 3 seconds to reduce battery/network load
-        if (now - lastSentRef.current < 3000) return;
+        if (now - lastSentRef.current < 120000) return;
         lastSentRef.current = now;
 
         await sendUpdate({ driverId: trimmedId, ...coords });
